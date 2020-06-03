@@ -49,7 +49,7 @@ class KinugawaDataSets():
         random.Random(self.RANDOM_SEED).shuffle(casename_List)
 
         self.TRAIN_LIST = casename_List[:N_train]
-        self.VALIDATION_LIST = casename_List[N_train:N_train+N_validation]
+        self.VALIDATION_LIST = casename_List[-N_validation-N_test:-N_test]
         self.TEST_LIST = casename_List[-N_test:]
 
         for s in self.TEST_SPECIFIC:
