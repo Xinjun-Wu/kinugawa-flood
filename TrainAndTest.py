@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch.utils.data as Data
 from tqdm import tqdm
 
-from dataSet import KinugawaDataSets
+from dataSet import CustomizeDataSets
 from CNN_models import ConvNet_2
 
 class TrainAndTest():
@@ -303,7 +303,7 @@ if __name__ == "__main__":
     RANDOM_SEED = 120
     CHECKPOINT = None
 
-    mydataset = KinugawaDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED)
+    mydataset = CustomizeDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED,bpname=BPNAME)
     model = ConvNet_2(3+int(STEP/6))
     MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
                                     CHECKPOINT, READ_VERSION, SAVE_VERSION)

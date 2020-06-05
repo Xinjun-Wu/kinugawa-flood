@@ -114,20 +114,21 @@ class GenerateData():
 
 
 if __name__ == "__main__":
-    BPNAME = 'BP028'
-    INPUT = f'../NpyData/{BPNAME}'
-    OUTPUT = f'../TrainData/{BPNAME}'
+
+    BPNAME_List = ['BP120']
     TIMEINTERVAL = 10
     N_DELTA = 6
     STEP = 12
-    LOCATION = (6, 28)
 
-    for h in range(6):
-        STEP = 6*(h+1)
-        print(f"\n Generating data for hour {h+1}")
+    for BPNAME in BPNAME_List:
+        INPUT = f'../NpyData/{BPNAME}'
+        OUTPUT = f'../TrainData/{BPNAME}'
 
-        mygenerater = GenerateData(INPUT, OUTPUT, TIMEINTERVAL, N_DELTA, STEP, LOCATION)
-        mygenerater.run()
+        for h in range(6):
+            STEP = 6*(h+1)
+            print(f"\n Generating{BPNAME} {h+1}-hour data.")
+            mygenerater = GenerateData(INPUT, OUTPUT, TIMEINTERVAL, N_DELTA, STEP, BPNAME)
+            mygenerater.run()
 
 
 

@@ -6,7 +6,7 @@ import random
 import time
 import datetime
 
-class KinugawaDataSets():
+class CustomizeDataSets():
     def __init__(self, step, input_folder='../TrainData/BP028/Step_6/',
                 tvt_ratio=[0.5,0.3,0.2], test_specific=[10, 11], random_seed=120,bpname='BP028'):
         """
@@ -219,14 +219,22 @@ class Map_style_DataSet(Data.Dataset):
 
         
 if __name__ == "__main__":
-    mydataset = KinugawaDataSets(6)
+    BPNAME = 'BP120'
+    STEP = 6
+    INPUT_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}'
+    TVT_RATIO=[0.5,0.3,0.2]
+    TEST_SPECIFIC=[10, 11]
+    RANDOM_SEED=120
+
+    mydataset = CustomizeDataSets(step=6,input_folder=INPUT_FOLDER,tvt_ratio=TVT_RATIO,
+                                    test_specific=TEST_SPECIFIC,random_seed=RANDOM_SEED,bpname=BPNAME)
     data_info, trainsets = mydataset.select('train')
-    traindataloder = Data.DataLoader(dataset=trainsets, batch_size=10, shuffle=True, num_workers = 3,pin_memory=True)
+    traindataloder = Data.DataLoader(dataset=trainsets, batch_size=10, shuffle=True, num_workers = 3,
+                                    pin_memory=True,drop_last=True)
 
     start_clock = time.time()
     start_total = start_clock
     for batch_id, (X_Tensor, y_Tensor) in enumerate(traindataloder):
-
         end_clock = time.time()
         start = datetime.timedelta(seconds=start_clock)
         end = datetime.timedelta(seconds=end_clock)
