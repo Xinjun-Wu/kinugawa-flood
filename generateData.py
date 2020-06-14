@@ -9,7 +9,7 @@ class GenerateData():
     変換された水理解析結果NPYファイルを訓練用NPZファイルに作成する。
     作成時間間隔を指定する可能
     """
-    def __init__(self, input_folder='../NpyData/', output_folder='../TrainData/', 
+    def __init__(self, input_folder='../NpyData/BP028', output_folder='../TrainData/BP028', 
                 timeinterval=10, n_delta=6, step=6, bpname='BP028'):
         self.INPUT_FOLDER = input_folder
         self.OUTPUT_FOLDER = output_folder

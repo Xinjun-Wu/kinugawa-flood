@@ -119,7 +119,7 @@ class TrainAndTest():
             validationloader = Data.DataLoader(dataset=validationdatasets, batch_size=TRAIN_BATCHSIZES, 
                                             shuffle=True, num_workers=TRAIN_NUM_WORKERS, pin_memory=True)
 
-        
+    
         ########################  Epoch Loop  ##########################################
         self.MODEL.train()
         ################  Epoch Clock  #############
@@ -152,7 +152,7 @@ class TrainAndTest():
                 if TRAIN_VERBOSE == 2: 
                     load_start = train_end = time.time()
                     train_timeusage = str(timedelta(seconds=train_end) - timedelta(seconds=train_start))
-                    print(f'Epoch : {epoch}, Batch ID : {batch_id}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
+                    print(f'Epoch : {epoch}, Batch ID : {batch_id}, Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
 
             RECORDER_List.append(loss.item())#记录train loss
             TRAIN_SCHEDULER.step()
@@ -185,7 +185,7 @@ class TrainAndTest():
             else:
                 RECORDER_List.append(None)
             RECORDER_PD = RECORDER_PD.append([RECORDER_List], ignore_index=True)#将本轮epoch的记录存起来
-            print(f'BPName={self.BPNAME}, Step={self.STEP}, Epoch={epoch}, LR={RECORDER_List[1]}, Train Loss={RECORDER_List[2]}, Validation Loss={RECORDER_List[3]}')
+            print(f'Name={self.BPNAME}, Step={self.STEP}, Epoch={epoch}, LR={RECORDER_List[1]}, Train Loss={RECORDER_List[2]}, Validation Loss={RECORDER_List[3]}')
 
             ################  Epoch Clock  #############    
             if TRAIN_VERBOSE == 1 or TRAIN_VERBOSE == 2:

@@ -29,13 +29,15 @@ if __name__ == "__main__":
     CHECK_EACH_STEP = False
     CHECK_EACH_BP = False
 
+    #提取checkpoint的信息
     if CHECKPOINT is not None:
         START_BP = CHECKPOINT[0]
         START_BP_INDEX = BPNAME_List.index(START_BP)
 
         STRT_STEP = CHECKPOINT[1]
         START_STEP_INDEX = STEP_List.index(STRT_STEP)
-
+        
+    #根据checkpoint重构循环队列
     for BPNAME in BPNAME_List[START_BP_INDEX:] if isinstance(BPNAME_List[START_BP_INDEX:],list) else [BPNAME_List[START_BP_INDEX:]]:
         for STEP in STEP_List[START_STEP_INDEX:] if isinstance(STEP_List[START_STEP_INDEX:], list) else [STEP_List[START_STEP_INDEX:]]:
 
