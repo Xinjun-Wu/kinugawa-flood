@@ -42,7 +42,8 @@ class Csv2Npy():
         for i in range(len(points)-1):
             Points_I_J.append([points[i],points[-1]])
         #Points_I_J = [[270,1], [271,1], [272,1, [273,1], [274,1]]
-        return Points_I_J
+        Group_ID = pointlists.loc[BPname][0]
+        return Group_ID, Points_I_J
 
 
     def _get_Inflow(self,inflowfile=r'../氾濫流量ハイドロ/氾濫ハイドロケース_10分間隔_20200127.xlsx',
@@ -80,12 +81,12 @@ class Csv2Npy():
             ijCoordinates =dataframe[selectIJ].to_numpy()
             xyCoordinates =dataframe[selectXY].to_numpy()
 
-        Points_I_J = self._get_PointLists()
+        Group_ID, Points_I_J = self._get_PointLists()
         Inflow_DF = self._get_Inflow()
 
         npz_save_name = os.path.join(self.OUTPUT_FOLDER, '_info.npz' )
         np.savez(npz_save_name,IJCOORDINATES=ijCoordinates,XYCOORDINATES=xyCoordinates,
-                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, INFLOW_DF=[Inflow_DF,0],allow_pickle=True)
+                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, Group_ID=Group_ID, INFLOW_DF=[Inflow_DF,0],allow_pickle=True)
         print(f'Have created _info.npz file for {self.BPNAME}.')
         
 
