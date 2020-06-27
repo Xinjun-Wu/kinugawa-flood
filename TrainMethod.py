@@ -12,14 +12,14 @@ from tqdm import tqdm
 
 from dataSet import CustomizeDataSets
 from TrainAndTest import TrainAndTest
-from CNN_models import ConvNet_2
+from Select_Net import select_net
 
 if __name__ == "__main__":
         ###################### Initialize Parameters ####################################
     READ_VERSION = 1
     SAVE_VERSION = 1
-    TVT_RATIO = [0.1, 0.1, 0.2]
-    TEST_SPECIFIC = [10,11]
+    TVT_RATIO = [0.5, 0.3, 0.2]
+    TEST_SPECIFIC = [10,12]
     RANDOM_SEED = 120
     BPNAME_List = ['BP028','BP033','BP043']
     STEP_List = [6, 12, 18, 24, 30, 36]
@@ -39,6 +39,11 @@ if __name__ == "__main__":
         
     #根据checkpoint重构循环队列
     for BPNAME in BPNAME_List[START_BP_INDEX:] if isinstance(BPNAME_List[START_BP_INDEX:],list) else [BPNAME_List[START_BP_INDEX:]]:
+        
+        INFO_path = f'../NpyData/{BPNAME}/_info.npz'
+        INFO_file = np.load(INFO_path)
+        GROUP_ID = INFO_file['GROUP_ID']
+
         for STEP in STEP_List[START_STEP_INDEX:] if isinstance(STEP_List[START_STEP_INDEX:], list) else [STEP_List[START_STEP_INDEX:]]:
 
             if CHECKPOINT is not None:
@@ -52,7 +57,8 @@ if __name__ == "__main__":
             print(f'BPNAME = {BPNAME}, STEP = {STEP}')
 
             mydataset = CustomizeDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED, BPNAME)
-            model = ConvNet_2(3+int(STEP/6))
+            #model = ConvNet_2(3+int(STEP/6))
+            model = select_net(GROUP_ID,int(STEP/6)+3)
             MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
                                             CHECKPOINT, READ_VERSION, SAVE_VERSION)
             ############################## Train Paramters #################################

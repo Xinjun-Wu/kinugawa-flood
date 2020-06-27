@@ -152,33 +152,36 @@ class TrainAndTest():
                 if TRAIN_VERBOSE == 2: 
                     load_start = train_end = time.time()
                     train_timeusage = str(timedelta(seconds=train_end) - timedelta(seconds=train_start))
-                    print(f'Epoch : {epoch}, Batch ID : {batch_id}, Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
+                    print(f'Name={self.BPNAME}, Step={self.STEP}, Epoch : {epoch}, Batch ID : {batch_id}, Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
 
             RECORDER_List.append(loss.item())#记录train loss
             TRAIN_SCHEDULER.step()
 
             #####################  Validation Batch Loop  #################################
             if TRAIN_VALIDATION:
-                ################  Validation Clock  ##################
-                if TRAIN_VERBOSE == 2:  
-                    validation_start = time.time()
 
                 self.MODEL.eval()
                 with torch.no_grad():
+                    #####  Load Clock  ###### 
+                    load_start = time.time()
                     for batch_id, (X_tensor, Y_tensor) in enumerate(validationloader):
 
                         X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                         Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
+                        ##########  Load&Val Clock  ######
+                        if TRAIN_VERBOSE == 2:
+                            val_start = load_end = time.time()
+                            load_timeusage = str(timedelta(seconds=load_end) - timedelta(seconds=load_start))
 
                         self.MODEL.zero_grad()
                         Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
 
                         loss = TRAIN_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
-                ################  Validation Clock  ##################
-                if TRAIN_VERBOSE == 2:  
-                    validation_end = time.time()
-                    validation_timesuage = str(timedelta(seconds=validation_end) - timedelta(seconds=validation_start))
-                    print(f'Epoch {epoch} Validation timesuage : {validation_timesuage}')
+                        ##########  Val & Load Clock  ######  
+                        if TRAIN_VERBOSE == 2: 
+                            load_start = val_end = time.time()
+                            val_timeusage = str(timedelta(seconds=val_end) - timedelta(seconds=val_start))
+                            print(f'Name={self.BPNAME}, Step={self.STEP}, Epoch : {epoch}, Batch ID : {batch_id}, Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Val timeusage : {val_timeusage}')
 
                 RECORDER_List.append(loss.item())#记录validaion loss
                 self.MODEL.train()
@@ -290,43 +293,7 @@ class TrainAndTest():
 
 
 if __name__ == "__main__":
-    ###################### Initialize Parameters ####################################
-    BPNAME = 'BP028'
-    STEP = 6
-    INPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-    OUTPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-    Data_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}/'
-    READ_VERSION = 1
-    SAVE_VERSION = 1
-    TVT_RATIO = [0.2,0.1,0.1]
-    TEST_SPECIFIC = [10, 11]
-    RANDOM_SEED = 120
-    CHECKPOINT = None
+    print('*** Please run with \'TrainAndTest.py\' script! ***')
 
-    mydataset = CustomizeDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED,bpname=BPNAME)
-    model = ConvNet_2(3+int(STEP/6))
-    MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
-                                    CHECKPOINT, READ_VERSION, SAVE_VERSION)
-    ############################## Train Paramters #################################
-    LR = 0.001
-    Train_lambda = lambda epoch: 1/np.sqrt(((epoch % 100)+1.0))
-    optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
-    scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
-    TRAIN_PARAMS_DICT = {
-                        'EPOCHS' : 5,
-                        'BATCHSIZES' : 2,
-                        'LOSS_FN' : nn.L1Loss(),
-                        'OPTIMIZER' : optimizer,
-                        'SCHEDULER' : scheduler,
-                        'MODEL_SAVECYCLE' : 1,
-                        'RECORDER_SAVECYCLE' : 1,
-                        'NUM_WORKERS' : 3,
-                        'VALIDATION' : True,
-                        'VERBOSE' : 2,
-                        'TRANSFER' : False,
-                        'CHECK_OPTIMIZER' : True,
-                        'CHECK_SCHEDULER' : True,
-                        }
-    MyTrainAndTest.train(TRAIN_PARAMS_DICT)
 
                 

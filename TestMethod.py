@@ -12,13 +12,14 @@ from tqdm import tqdm
 
 from dataSet import CustomizeDataSets
 from TrainAndTest import TrainAndTest
-from CNN_models import ConvNet_2
+from Select_Net import select_net
+
 if __name__ == "__main__":
     ###################### Initialize Parameters ####################################
     READ_VERSION = 1
     SAVE_VERSION = 1
-    TVT_RATIO = [0.2, 0.1, 0.05]
-    TEST_SPECIFIC = [10, 11]
+    TVT_RATIO = [0.5, 0.3, 0.2]
+    TEST_SPECIFIC = [10, 12]
     RANDOM_SEED = 120
     TEST_NUM_WORKERS = 0
     BPNAME_List = ['BP028']
@@ -31,6 +32,10 @@ if __name__ == "__main__":
     SAVE_CYCLE = 10
 
     for BPNAME in BPNAME_List:
+
+        INFO_path = f'../NpyData/{BPNAME}/_info.npz'
+        INFO_file = np.load(INFO_path)
+        GROUP_ID = INFO_file['GROUP_ID']
 
         for STEP in STEP_List:
 
@@ -53,7 +58,8 @@ if __name__ == "__main__":
                             'NUM_WORKERS': 0
                             }
 
-            model = ConvNet_2(3+int(STEP/6))
+            #model = ConvNet_2(3+int(STEP/6))
+            model = select_net(GROUP_ID,int(STEP/6)+3)
             MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
                                             CHECKPOINT, READ_VERSION, SAVE_VERSION)
 

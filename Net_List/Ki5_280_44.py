@@ -13,7 +13,7 @@ from torch.autograd import Variable
 
 ###################
 
-#NET FOR MESH 510*53
+#NET FOR MESH 280*44
 
 ###################
 
@@ -22,9 +22,11 @@ from torch.autograd import Variable
 class ConvNet_2(nn.Module):
     def __init__(self,channel_n):
         super(ConvNet_2, self).__init__()
-        # 5*510*53 - 32*504*48
+        
+        # 5*512*80 - 16*508*76,
+        # 5*280*44 - 16*276*40,
         self.convlayer1 = nn.Sequential(
-            nn.Conv2d(channel_n,32, kernel_size = (7,6)),#nn.Conv2d(5,16, kernel_size = 5),
+            nn.Conv2d(channel_n,32, kernel_size = 5),
             nn.BatchNorm2d(32),
             nn.PReLU(32))
         if torch.cuda.device_count()>1:
@@ -38,7 +40,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer1_1 = nn.DataParallel(self.convlayer1_1)
         
-        # 32*504*48 - 64*252*24
+        # 32**508*76 - 64*254*38,
+        # 32*276*40 - 64*138*20,
         self.convlayer2 = nn.Sequential(
             nn.Conv2d(32,64, kernel_size = 2, stride = 2),
             nn.BatchNorm2d(64),
@@ -53,7 +56,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer2_1 = nn.DataParallel(self.convlayer2_1)
         
-        # 64*252*24 - 256*126*12
+        # 64*254*38 - 256*127*19
+        # 64*138*20 - 256*69*10
         self.convlayer3 = nn.Sequential(
             nn.Conv2d(64,256, kernel_size = 2, stride = 2),
             nn.BatchNorm2d(256),
@@ -69,7 +73,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer3_1 = nn.DataParallel(self.convlayer3_1)
             
-        # 256*126*12 - 256*126*12
+        # 256*127*19 - 256*127*19
+        # 256*69*110 - 256*69*10
         self.convlayer4 = nn.Sequential(
             nn.Conv2d(256,256, kernel_size = 3, padding = 1),
             nn.Conv2d(256,256, kernel_size = 1),
@@ -78,7 +83,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer4 = nn.DataParallel(self.convlayer4)
         
-        # 256*126*12 - 256*126*12
+        # 256*127*19 - 256*127*19
+        # 256*69*10 - 256*69*10
         self.convlayer5 = nn.Sequential(
             nn.Conv2d(256,256, kernel_size = 3, padding = 1),
             nn.BatchNorm2d(256),
@@ -86,7 +92,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer5 = nn.DataParallel(self.convlayer5)
         
-        # 256*126*12 - 256*126*12
+        # 256*127*19 - 256*127*19
+        # 256*69*10 - 256*69*10
         self.convlayer6 = nn.Sequential(
             nn.Conv2d(256,256, kernel_size = 3, padding = 1),
             nn.Conv2d(256,256, kernel_size = 1),
@@ -95,7 +102,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer6 = nn.DataParallel(self.convlayer6)
         
-        # 256*126*12 - 256*126*12
+        # 256*127*19- 256*127*19
+        # 256*69*10 - 256*69*10
         self.convlayer7 = nn.Sequential(
             nn.Conv2d(256,256, kernel_size = 3, padding = 1),
             nn.BatchNorm2d(256),
@@ -103,7 +111,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer7 = nn.DataParallel(self.convlayer7)
         
-        # 256*126*12 - 128*252*24
+        # 256*127*19 - 128*254*38
+        # 256*69*10 - 128*138*20
         self.convlayer8 = nn.Sequential(
             nn.ConvTranspose2d(256,128, kernel_size = 2, stride = 2),
             nn.BatchNorm2d(128),
@@ -112,9 +121,10 @@ class ConvNet_2(nn.Module):
             self.convlayer8 = nn.DataParallel(self.convlayer8)
         
         
-        # 128*252*24 - 64*506*50
+        # 128*254*38 - 64*508*76
+        # 128*138*20 - 64*276*40
         self.convlayer9 = nn.Sequential(
-            nn.ConvTranspose2d(128,64, kernel_size = (4,4), stride = 2),#nn.ConvTranspose2d(128,64, kernel_size = 2, stride = 2),
+            nn.ConvTranspose2d(128,64, kernel_size = 2, stride = 2),
             nn.BatchNorm2d(64),
             nn.PReLU(64))
         if torch.cuda.device_count()>1:
@@ -129,9 +139,10 @@ class ConvNet_2(nn.Module):
             self.convlayer9_1 = nn.DataParallel(self.convlayer9_1)
         
         
-        # 64*506*50 - 32*510*53
+        # 64*508*76 - 32*512*80
+        # 64*276*40 - 32*280*44
         self.convlayer10 = nn.Sequential(
-            nn.ConvTranspose2d(64,32, kernel_size = (5,4)),#nn.ConvTranspose2d(64,32, kernel_size = 5),
+            nn.ConvTranspose2d(64,32, kernel_size = 5),
             nn.BatchNorm2d(32),
             nn.PReLU(32))
         if torch.cuda.device_count()>1:
@@ -144,8 +155,9 @@ class ConvNet_2(nn.Module):
             nn.PReLU(32))
         if torch.cuda.device_count()>1:
             self.convlayer10_1 = nn.DataParallel(self.convlayer10_1)
-
-        # 32*510*50 - 12*510*53
+        
+        # 32*512*80 - 12*512*80
+        # 32*280*44 - 12*280*44
         self.convlayer11 = nn.Sequential(
             nn.Conv2d(32,12, kernel_size = 3, padding = 1),
             nn.BatchNorm2d(12),
@@ -153,7 +165,8 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer11 = nn.DataParallel(self.convlayer11)
         
-        # 12*510*53 - 3*510*53
+        # 12*512*80 - 3*512*80
+        # 12*280*44 - 3*280*44
         self.convlayer12 = nn.Sequential(
             nn.Conv2d(12,3, kernel_size = 1),
             nn.BatchNorm2d(3),
