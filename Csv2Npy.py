@@ -16,6 +16,7 @@ class Csv2Npy():
         self.COLUMNS = None
         self.WIDTH = None
         self.BPNAME = bpname
+        self.DEM = None
 
         if not os.path.exists(self.OUTPUT_FOLDER):
             os.makedirs(self.OUTPUT_FOLDER)
@@ -37,7 +38,8 @@ class Csv2Npy():
         pointlists = pd.read_excel(listfile, skiprows=skiprows, index_col=index_col)
         BPname = self.BPNAME
         # return a array : array[270,271,272,273,274.1]
-        points = pointlists.loc[BPname].to_numpy()[3:-1] 
+        # points = pointlists.loc[BPname].to_numpy()[3:-1] 
+        points = pointlists.loc[BPname].to_numpy()[3:9] 
         Points_I_J = []
         for i in range(len(points)-1):
             Points_I_J.append([points[i],points[-1]])
@@ -49,7 +51,7 @@ class Csv2Npy():
     def _get_Inflow(self,inflowfile=r'../氾濫流量ハイドロ/氾濫ハイドロケース_10分間隔_20200127.xlsx',
                         header=0,sheet_name='氾濫ハイドロパターン (10分間隔)'):
         """
-        获取各个工况下的入流纪录
+        获取各个工况下的入流记录
         
             Keyword Arguments:
                 inflowfile {xlsxfile}} -- [description] (default: {r'../氾濫流量ハイドロ/氾濫ハイドロケース_10分間隔_20200127.xlsx'})
@@ -80,13 +82,17 @@ class Csv2Npy():
             #xyCoordinates.shape=(27030, 4) with I・J・X・Y
             ijCoordinates =dataframe[selectIJ].to_numpy()
             xyCoordinates =dataframe[selectXY].to_numpy()
+            dem = dataframe['Elevation'].to_numpy()
+            dem = dem.reshape(self.COLUMNS, self.ROWS).transpose()
+            self.DEM = dem
 
         Group_ID, Points_I_J = self._get_PointLists()
         Inflow_DF = self._get_Inflow()
 
         npz_save_name = os.path.join(self.OUTPUT_FOLDER, '_info.npz' )
-        np.savez(npz_save_name,IJCOORDINATES=ijCoordinates,XYCOORDINATES=xyCoordinates,
-                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, Group_ID=Group_ID, INFLOW_DF=[Inflow_DF,0],allow_pickle=True)
+        np.savez(npz_save_name, IJCOORDINATES=ijCoordinates, XYCOORDINATES=xyCoordinates,
+                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, GROUP_ID=Group_ID, 
+                INFLOW_DF=[Inflow_DF,0], DEM=[self.DEM, 0], allow_pickle=True)
         print(f'Have created _info.npz file for {self.BPNAME}.')
         
 
@@ -99,7 +105,7 @@ class Csv2Npy():
         select=["Depth","Velocity(ms-1)X","Velocity(ms-1)Y"]
         watersituation = []
 
-        for file_path in index_path_List:
+        for file_path in index_path_List: #循环n次, 这里n为时刻记数72
             data_PD = pd.read_csv(file_path, header= 2)
 
             #channel_i.shape=(27030, 3) with 水深・フラックスx・フラックy
@@ -108,7 +114,8 @@ class Csv2Npy():
             channel_i=channel_i.reshape(self.COLUMNS,self.ROWS,3).transpose()
             #appending the data to list
             watersituation.append(channel_i)
-
+        
+        #(3,510, 53)==>(72, 3, 510, 53)
         watersituation = np.array(watersituation)
 
         return watersituation
@@ -135,7 +142,7 @@ class Csv2Npy():
         print(f"Have generated {self.NPY_COUNT} .npy files")
 
 if __name__ == "__main__":
-    BPNAME_List = ['BP120']
+    BPNAME_List = ['BP028']
 
     for BPNAME in BPNAME_List:
 
