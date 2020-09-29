@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch.utils.data as Data
 from tqdm import tqdm
 
-from dataSet import CustomizeDataSets, SHUFFLE, TEST_SIZE
+from dataSet import CustomizeDataSets
 from TrainAndTest import TrainAndTest
 from Select_Net import select_net
 
@@ -38,6 +38,10 @@ if __name__ == "__main__":
 
         STRT_STEP = CHECKPOINT[1]
         START_STEP_INDEX = STEP_List.index(STRT_STEP)
+    else:
+        START_BP_INDEX = 0
+        START_STEP_INDEX = 0
+
         
     #根据checkpoint重构循环队列
     for BPNAME in BPNAME_List[START_BP_INDEX:] if isinstance(BPNAME_List[START_BP_INDEX:],list) else [BPNAME_List[START_BP_INDEX:]]:
@@ -54,11 +58,11 @@ if __name__ == "__main__":
 
             INPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
             OUTPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-            Data_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}/'
+            DATA_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}/'
 
             print(f'BPNAME = {BPNAME}, STEP = {STEP}')
 
-            mydataset = CustomizeDataSets(INPUT_FOLDER,BPNAME,STEP,TEST_SIZE,SHUFFLE,RANDOM_SEED)
+            mydataset = CustomizeDataSets(DATA_FOLDER,BPNAME,STEP,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
             model = select_net(GROUP_ID,int(STEP/N_DELTA)+4)
             MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
