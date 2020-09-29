@@ -1,4 +1,5 @@
 import os
+from numpy.lib.function_base import average
 import torch
 import time
 import datetime
@@ -9,12 +10,10 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as Data
 from tqdm import tqdm
-
 from dataSet import CustomizeDataSets
-from CNN_models import ConvNet_2
 
 class TrainAndTest():
-    def __init__(self, model, dataset, input_folder='../Save/BP028/Step_6/', output_folder='../Save/BP028/Step_6/', 
+    def __init__(self, model, dataset, input_folder='../Save/BP028/Step_1/', output_folder='../Save/BP028/Step_1/', 
                     checkpoint=None, read_version=1, save_version=1):
         self.INPUT_FOLDER = input_folder
         self.OUTPUT_FOLDER = output_folder
@@ -24,8 +23,9 @@ class TrainAndTest():
             os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'recorder'))
         self.MODEL = model
         self.DATASET = dataset
-        self.STEP = dataset.STEP
-        self.BPNAME = dataset.BPNAME
+        if dataset is not None:
+            self.STEP = dataset.STEP
+            self.BPNAME = dataset.BPNAME
         self.CHECKPOINT = checkpoint
         self.CHECKBP = None
         self.CHECKSTEP = None
@@ -46,6 +46,7 @@ class TrainAndTest():
         self.MODEL.to(self.DEVICE)
 
     def _register_checkpoint(self):
+        #注册检查点，读取检查点信息
         CHECK_EPOCH = int(self.CHECKPOINT[-1])
         model_checkpath = os.path.join(self.INPUT_FOLDER, f"model/model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt")
         recorder_checkpath = os.path.join(self.INPUT_FOLDER, f'recorder/optim_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt')
@@ -63,7 +64,7 @@ class TrainAndTest():
     ############################  Train & Validation  ################################
     def train(self,train_params_Dict):
         self.TRAIN_PARAMS_DICT = train_params_Dict
-
+        #加载训练参数
         #TRAIN_LR = self.TRAIN_PARAMS_DICT['LR']
         TRAIN_EPOCHS = self.TRAIN_PARAMS_DICT['EPOCHS']
         TRAIN_BATCHSIZES = self.TRAIN_PARAMS_DICT['BATCHSIZES']
@@ -111,11 +112,11 @@ class TrainAndTest():
                 print('未加载以往scheduler的参数')
 
         ###########################  DataLoader  #######################################
-        train_datainfo, traindatasets = self.DATASET.select('train')
+        traindatasets = self.DATASET.select('train')
         trainloader = Data.DataLoader(dataset=traindatasets, batch_size=TRAIN_BATCHSIZES, 
                                         shuffle=True, num_workers=TRAIN_NUM_WORKERS, pin_memory=True)
         if TRAIN_VALIDATION:
-            validation_datainfo, validationdatasets = self.DATASET.select('validation')
+            validationdatasets = self.DATASET.select('test')
             validationloader = Data.DataLoader(dataset=validationdatasets, batch_size=TRAIN_BATCHSIZES, 
                                             shuffle=True, num_workers=TRAIN_NUM_WORKERS, pin_memory=True)
 
@@ -224,7 +225,7 @@ class TrainAndTest():
                                                         f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.4f')
 
 
-    def test(self, test_params_Dict, checkpoint, test_info_data=None):
+    def test(self, test_params_Dict, checkpoint):
 
         if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'test')):
             os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'test'))
@@ -235,8 +236,11 @@ class TrainAndTest():
             self.CHECKSTEP = self.CHECKPOINT[1]
             self.CHECKEPOCH = self.CHECKPOINT[2]
 
-        TEST_NUM_WORKERS = self.TEST_PARAMS_DICT['NUM_WORKERS']
+        TEST_STEP = self.TEST_PARAMS_DICT['TEST_STEP']
         TEST_LOSS_FN = self.TEST_PARAMS_DICT['LOSS_FN']
+        TEST_CASE_NAME = self.TEST_PARAMS_DICT['CASENAME']
+        TEST_DATA_X = self.TEST_PARAMS_DICT['TEST_DATA_X']
+        TEST_DATA_y = self.TEST_PARAMS_DICT['TEST_DATA_y']
         ########################################## Register Checkpoint  ####################################
         CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_PD, OPTIMIZER_Dict, SCHEDULER_Dict = self._register_checkpoint()
         self.MODEL.load_state_dict(MODEL_Dict)
@@ -250,50 +254,59 @@ class TrainAndTest():
             os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'test', 
                     f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}"))
         ########################################## Select Test Info&Data  ######################################
-        if test_info_data  is not None:
-            #TEST_BATCHSIZES = test_info_data['TEST_BATCHSIZES']
-            TEST_CASE_LIST = test_info_data['TEST_CASE_LIST']
-            testloader = test_info_data['TEST_DATALOADER']
-        else:
-            test_datainfo, testdatasets = self.DATASET.select('test')
-            TEST_BATCHSIZES = test_datainfo['n_sample_eachcase']
-            TEST_CASE_LIST = test_datainfo['case_index_List']
+        # if test_info_data  is not None:
+        #     #TEST_BATCHSIZES = test_info_data['TEST_BATCHSIZES']
+        #     TEST_CASE_LIST = test_info_data['TEST_CASE_LIST']
+        #     testloader = test_info_data['TEST_DATALOADER']
+        # else:
+        #     test_datainfo, testdatasets = self.DATASET.select('test')
+        #     TEST_BATCHSIZES = test_datainfo['n_sample_eachcase']
+        #     TEST_CASE_LIST = test_datainfo['case_index_List']
 
-            testloader = Data.DataLoader(dataset=testdatasets, batch_size=TEST_BATCHSIZES, 
-                                            shuffle=False, num_workers=TEST_NUM_WORKERS, pin_memory=True)
+        #     testloader = Data.DataLoader(dataset=testdatasets, batch_size=TEST_BATCHSIZES, 
+        #                                     shuffle=False, num_workers=TEST_NUM_WORKERS, pin_memory=True)
 
         ########################################  Test Case Loop  #######################################
         self.MODEL.eval()
 
         with torch.no_grad():
-            for case_id, (X_tensor, Y_tensor) in enumerate(testloader):
+            Y_output_tensor_gpu_list = []#保存输出的Y
+            LOSS_ITEM = []# 保存每次loss
+            for sample_id, (X_tensor, Y_tensor) in enumerate(zip(TEST_DATA_X,TEST_DATA_y)):
 
                 X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                 Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
 
+                if len(Y_output_tensor_gpu_list ) > self.STEP-1 :#当保存的Y的个数大于或等于STEP时，使用预测的结果作为下一个周期的输入
+                    X_input_tensor_gpu[:,1:4,:,:] = Y_output_tensor_gpu_list[sample_id - self.STEP]
+
                 self.MODEL.zero_grad()
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
+                Y_output_tensor_gpu_list.append(Y_output_tensor_gpu)
 
                 loss = TEST_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
+                LOSS_ITEM.append(loss.item())
 
-                ################### Save & Record ################################
-                casename = f'case{TEST_CASE_LIST[case_id]}'
-                Y_input_tensor_cpu = Y_input_tensor_gpu.cpu()
-                Y_input_Array = Y_input_tensor_cpu.numpy()
+            ################### Save & Record ################################
+            #casename = f'case{TEST_CASE_LIST[case_id]}'
+            # Y_input_tensor_cpu = Y_input_tensor_gpu.cpu()
+            # Y_input_Array = Y_input_tensor_cpu.numpy()
+            Y_input_Array = TEST_DATA_y
 
-                Y_output_tensor_cpu = Y_output_tensor_gpu.cpu()
-                Y_output_Array = Y_output_tensor_cpu.numpy()
+            # Y_output_tensor_cpu = Y_output_tensor_gpu.cpu()
+            # Y_output_Array = Y_output_tensor_cpu.numpy()
+            Y_output_Array = np.array(list(map(lambda x:x.cpu().numpy(), Y_output_tensor_gpu_list)))
 
-                savepath = os.path.join(self.OUTPUT_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{casename}.npz')
-                np.savez(savepath, input=Y_input_Array, output=Y_output_Array)
-                TEST_recorder_Dict[str(casename)] = [loss.item()]
-                print(f'Model with [BP={self.CHECKBP}, Step={self.CHECKSTEP}, epoch={CHECK_EPOCH}] test loss in {casename} : {loss.item()}')
+            savepath = os.path.join(self.OUTPUT_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{TEST_CASE_NAME}.npz')
+            np.savez(savepath, input=Y_input_Array, output=Y_output_Array)
+            TEST_recorder_Dict[str(TEST_CASE_NAME)] = LOSS_ITEM
+            print(f'Model with [BP={self.CHECKBP}, Step={self.CHECKSTEP}, epoch={CHECK_EPOCH}] test loss in {TEST_CASE_NAME} : {average(LOSS_ITEM)}')
 
         return TEST_recorder_Dict
 
 
 if __name__ == "__main__":
-    print('*** Please run with \'TrainAndTest.py\' script! ***')
+    print('*** Please run with \'TrainMethod.py\' or \'TestMethod.py\' script! ***')
 
 
                 

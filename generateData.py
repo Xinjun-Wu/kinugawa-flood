@@ -106,7 +106,7 @@ class GenerateData():
         
         N_addchannel = int(self.STEP/self.N_DELTA) # 根据计算步长 %STEP% 及分段积分步长 %N_DELTA% 计算增加的通道个数
         N_sample = self.N_TIMESTEMP-self.STEP # 根据时刻计数即总步长 %N_TIMESTEMP% 和计算步长 %STEP% 计算完整的样本个数
-        inint_inflow_Array = np.zeros((N_sample, N_addchannel+1, self.HEIGHT, self.WIDTH))#初始化
+        inint_inflow_Array = np.zeros((N_sample, N_addchannel, self.HEIGHT, self.WIDTH))#初始化,
 
         integrate_sequence = integrate_sequence.reshape(N_sample, N_addchannel, self.N_DELTA+1)
         

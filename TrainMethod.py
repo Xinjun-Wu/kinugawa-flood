@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch.utils.data as Data
 from tqdm import tqdm
 
-from dataSet import CustomizeDataSets
+from dataSet import CustomizeDataSets, SHUFFLE, TEST_SIZE
 from TrainAndTest import TrainAndTest
 from Select_Net import select_net
 
@@ -18,16 +18,18 @@ if __name__ == "__main__":
         ###################### Initialize Parameters ####################################
     READ_VERSION = 1
     SAVE_VERSION = 1
-    TVT_RATIO = [0.5, 0.3, 0.2]
-    TEST_SPECIFIC = [10,12]
+    TEST_SIZE = 0.3
     RANDOM_SEED = 120
     BPNAME_List = ['BP028','BP033','BP043']
-    STEP_List = [6, 12, 18, 24, 30, 36]
-    #STEP_List = [6]
+    STEP_List = [1,3]
+    STEP_List = [1]
     CHECKPOINT = None
-    CHECKPOINT = ['BP033', 12, 590] ###STEP == 6 , EPOCH == 5
+    #CHECKPOINT = ['BP028', 1, 590] ###STEP == 1 , EPOCH == 590
     CHECK_EACH_STEP = False
     CHECK_EACH_BP = False
+    SHUFFLE = True
+    N_DELTA = 1
+
 
     #提取checkpoint的信息
     if CHECKPOINT is not None:
@@ -56,9 +58,9 @@ if __name__ == "__main__":
 
             print(f'BPNAME = {BPNAME}, STEP = {STEP}')
 
-            mydataset = CustomizeDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED, BPNAME)
+            mydataset = CustomizeDataSets(INPUT_FOLDER,BPNAME,STEP,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
-            model = select_net(GROUP_ID,int(STEP/6)+3)
+            model = select_net(GROUP_ID,int(STEP/N_DELTA)+4)
             MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
                                             CHECKPOINT, READ_VERSION, SAVE_VERSION)
             ############################## Train Paramters #################################
@@ -69,7 +71,7 @@ if __name__ == "__main__":
             TRAIN_PARAMS_DICT = {
                                 'EPOCHS' : 2000,
                                 'BATCHSIZES' : 144,
-                                'LOSS_FN' : nn.L1Loss(),
+                                'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,
                                 'SCHEDULER' : scheduler,
                                 'MODEL_SAVECYCLE' : 10,
