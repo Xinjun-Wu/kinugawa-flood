@@ -143,6 +143,7 @@ class Csv2Npy():
 
 if __name__ == "__main__":
     BPNAME_List = ['BP028']
+    BPNAME_List = ['BP032']
 
     for BPNAME in BPNAME_List:
 

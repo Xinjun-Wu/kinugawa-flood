@@ -153,6 +153,7 @@ class GenerateData():
 if __name__ == "__main__":
 
     BPNAME_List = ['BP028']
+    BPNAME_List = ['BP032']
     TIMEINTERVAL = 10
     N_DELTA = 1
     STEP = 1

@@ -21,6 +21,7 @@ if __name__ == "__main__":
     TEST_SIZE = 0.3
     RANDOM_SEED = 120
     BPNAME_List = ['BP028','BP033','BP043']
+    BPNAME_List = ['BP032']
     STEP_List = [1,3]
     STEP_List = [1]
     CHECKPOINT = None
@@ -74,7 +75,7 @@ if __name__ == "__main__":
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
             TRAIN_PARAMS_DICT = {
                                 'EPOCHS' : 2000,
-                                'BATCHSIZES' : 144,
+                                'BATCHSIZES' : 128,
                                 'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,
                                 'SCHEDULER' : scheduler,
@@ -82,7 +83,7 @@ if __name__ == "__main__":
                                 'RECORDER_SAVECYCLE' : 100,
                                 'NUM_WORKERS' : 3,
                                 'VALIDATION' : True,
-                                'VERBOSE' : 2,
+                                'VERBOSE' : 1,
                                 'TRANSFER' : False,
                                 'CHECK_OPTIMIZER' : True,
                                 'CHECK_SCHEDULER' : True,

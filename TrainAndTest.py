@@ -285,7 +285,9 @@ class TrainAndTest():
                 Y_output_tensor_gpu_list.append(Y_output_tensor_gpu)
 
                 loss = TEST_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
+                #记录损失值
                 LOSS_ITEM.append(loss.item())
+                TEST_recorder_Dict[f't_{sample_id + self.STEP}'] = loss.item()
 
             ################### Save & Record ################################
             #casename = f'case{TEST_CASE_LIST[case_id]}'
@@ -299,7 +301,7 @@ class TrainAndTest():
 
             savepath = os.path.join(self.OUTPUT_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{TEST_CASE_NAME}.npz')
             np.savez(savepath, input=Y_input_Array, output=Y_output_Array)
-            TEST_recorder_Dict[str(TEST_CASE_NAME)] = LOSS_ITEM
+            #TEST_recorder_Dict[str(TEST_CASE_NAME)] = LOSS_ITEM
             print(f'Model with [BP={self.CHECKBP}, Step={self.CHECKSTEP}, epoch={CHECK_EPOCH}] test loss in {TEST_CASE_NAME} : {average(LOSS_ITEM)}')
 
         return TEST_recorder_Dict
