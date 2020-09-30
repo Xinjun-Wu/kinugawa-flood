@@ -245,7 +245,7 @@ class TrainAndTest():
         CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_PD, OPTIMIZER_Dict, SCHEDULER_Dict = self._register_checkpoint()
         self.MODEL.load_state_dict(MODEL_Dict)
         TEST_recorder_Dict = {}
-        TEST_recorder_Dict['EPOCH'] = CHECK_EPOCH
+        TEST_recorder_Dict['EPOCH'] = [CHECK_EPOCH]
         self.MODEL.to(self.DEVICE)
         TEST_LOSS_FN.to(self.DEVICE)
         #创建test结果的保存文件夹
@@ -272,13 +272,16 @@ class TrainAndTest():
         with torch.no_grad():
             Y_output_tensor_gpu_list = []#保存输出的Y
             LOSS_ITEM = []# 保存每次loss
-            for sample_id, (X_tensor, Y_tensor) in enumerate(zip(TEST_DATA_X,TEST_DATA_y)):
+            for sample_id, (X_Input, Y_Input) in enumerate(zip(TEST_DATA_X,TEST_DATA_y)):
+
+                X_tensor = X_Input.unsqueeze(0)
+                Y_tensor = Y_Input.unsqueeze(0)
 
                 X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                 Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
 
-                if len(Y_output_tensor_gpu_list ) > self.STEP-1 :#当保存的Y的个数大于或等于STEP时，使用预测的结果作为下一个周期的输入
-                    X_input_tensor_gpu[:,1:4,:,:] = Y_output_tensor_gpu_list[sample_id - self.STEP]
+                if len(Y_output_tensor_gpu_list ) > TEST_STEP-1 :#当保存的Y的个数大于或等于STEP时，使用预测的结果作为下一个周期的输入
+                    X_input_tensor_gpu[:,1:4,:,:] = Y_output_tensor_gpu_list[sample_id - TEST_STEP]
 
                 self.MODEL.zero_grad()
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
@@ -287,7 +290,7 @@ class TrainAndTest():
                 loss = TEST_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
                 #记录损失值
                 LOSS_ITEM.append(loss.item())
-                TEST_recorder_Dict[f't_{sample_id + self.STEP}'] = loss.item()
+                TEST_recorder_Dict[f't_{sample_id + self.CHECKSTEP}'] = [loss.item()]
 
             ################### Save & Record ################################
             #casename = f'case{TEST_CASE_LIST[case_id]}'

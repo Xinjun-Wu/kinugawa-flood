@@ -25,13 +25,15 @@ if __name__ == "__main__":
     STEP_List = [1,3]
     STEP_List = [1]
     START_EPOCH =0
-    END_EPOCH = 20
-    EPOCH_STEP = 2
+    END_EPOCH = 2000
+    EPOCH_STEP = 10
     CHECKPOINT = None
     SAVE_CYCLE = 10
     TEST_CASE_LIST = [2,6]
-    TEST_CASE_LIST = np.linspace(1,31,31,True)
+    TEST_CASE_LIST = np.linspace(1,31,31,True,dtype=np.int)
+    TEST_CASE_LIST = [28,29,30,31]
     #CASENAME = 6 #进行测试的case名称
+    N_DELTA = 1
 
     for BPNAME in BPNAME_List:
 
@@ -59,6 +61,8 @@ if __name__ == "__main__":
                 case_data = np.load(case_path)
                 learning_data = case_data["learning_data"] #返回的是四阶数组
                 teacher_data = case_data['teacher_data']
+                learning_data = torch.tensor(learning_data)
+                teacher_data = torch.tensor(teacher_data)
 
                 # TEST_INFO_DATA = {
                 #                     'TEST_CASE_LIST' : TEST_CASE_LIST,
@@ -74,12 +78,12 @@ if __name__ == "__main__":
                                 }
 
                 #model = ConvNet_2(3+int(STEP/6))
-                model = select_net(GROUP_ID,int(STEP/6)+4)
+                model = select_net(GROUP_ID,int(STEP/N_DELTA)+4)
                 MyTrainAndTest = TrainAndTest(model, None, INPUT_FOLDER, OUTPUT_FOLDER,
-                                                CHECKPOINT, READ_VERSION, SAVE_VERSION)
+                                                CHECKPOINT, READ_VERSION, SAVE_VERSION)   
 
                 TEST_LOSS_path = os.path.join(OUTPUT_FOLDER, 'test', 
-                                f"model_V{READ_VERSION}", f'{CASENAME} test loss.csv')
+                                f'case{CASENAME} test loss.csv')
                 if os.path.exists(TEST_LOSS_path):
                     TEST_LOSS = pd.read_csv(TEST_LOSS_path, index_col=0)
                 else:
