@@ -11,6 +11,7 @@ import torch.optim as optim
 import torch.utils.data as Data
 from tqdm import tqdm
 from dataSet import CustomizeDataSets
+import torch.nn.functional as F
 
 class TrainAndTest():
     def __init__(self, model, dataset, input_folder='../Save/BP028/Step_1/', output_folder='../Save/BP028/Step_1/', 
@@ -285,6 +286,8 @@ class TrainAndTest():
 
                 self.MODEL.zero_grad()
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
+                Y_output_tensor_gpu[:,0,:,:] = F.relu(Y_output_tensor_gpu[:,0,:,:]+0.01)-0.01
+
                 Y_output_tensor_gpu_list.append(Y_output_tensor_gpu)
 
                 loss = TEST_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
@@ -301,6 +304,7 @@ class TrainAndTest():
             # Y_output_tensor_cpu = Y_output_tensor_gpu.cpu()
             # Y_output_Array = Y_output_tensor_cpu.numpy()
             Y_output_Array = np.array(list(map(lambda x:x.cpu().numpy(), Y_output_tensor_gpu_list)))
+            Y_output_Array = Y_output_Array.squeeze()
 
             savepath = os.path.join(self.OUTPUT_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{TEST_CASE_NAME}.npz')
             np.savez(savepath, input=Y_input_Array, output=Y_output_Array)

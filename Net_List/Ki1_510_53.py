@@ -161,29 +161,29 @@ class ConvNet_2(nn.Module):
         if torch.cuda.device_count()>1:
             self.convlayer12 = nn.DataParallel(self.convlayer12)
 
-    def add_noise(self,x):
+    # def add_noise(self,x):
 
-        dtype = x.dtype
-        device = x.device
-        batch = x.size()[0]
-        channel = x.size()[1]
-        height = x.size()[2]
-        width = x.size()[3]
+    #     dtype = x.dtype
+    #     device = x.device
+    #     batch = x.size()[0]
+    #     channel = x.size()[1]
+    #     height = x.size()[2]
+    #     width = x.size()[3]
 
-        mean = torch.tensor(0,dtype = dtype)
-        std = torch.tensor(0.005,dtype = dtype)
-        size = (batch,1,height,width)
+    #     mean = torch.tensor(0,dtype = dtype)
+    #     std = torch.tensor(0.005,dtype = dtype)
+    #     size = (batch,1,height,width)
 
-        noise_tensor = torch.normal(mean,std,size=size,device = device,dtype = dtype)
-        noise_tensor = F.relu(noise_tensor+0.01)-0.01
-        zero_padding = torch.zeros([batch,channel-1,height,width],device = device,dtype = dtype)
-        noise_padd = torch.cat((noise_tensor,zero_padding),1)
+    #     noise_tensor = torch.normal(mean,std,size=size,device = device,dtype = dtype)
+    #     noise_tensor = F.relu(noise_tensor+0.01)-0.01
+    #     zero_padding = torch.zeros([batch,channel-1,height,width],device = device,dtype = dtype)
+    #     noise_padd = torch.cat((noise_tensor,zero_padding),1)
 
-        noise_x = torch.add(x,noise_padd)
-        return noise_x
+    #     noise_x = torch.add(x,noise_padd)
+    #     return noise_x
         
     def forward(self, x):
-        x = self.add_noise(x)
+        #x = self.add_noise(x)
         x = self.convlayer1(x)
         x = self.convlayer1_1(x)
         x = self.convlayer2(x)

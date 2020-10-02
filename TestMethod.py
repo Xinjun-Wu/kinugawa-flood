@@ -84,13 +84,15 @@ if __name__ == "__main__":
 
                 TEST_LOSS_path = os.path.join(OUTPUT_FOLDER, 'test', 
                                 f'case{CASENAME} test loss.csv')
-                if os.path.exists(TEST_LOSS_path):
-                    TEST_LOSS = pd.read_csv(TEST_LOSS_path, index_col=0)
-                else:
-                    TEST_LOSS = pd.DataFrame()
+                # if os.path.exists(TEST_LOSS_path) and :
+                #     TEST_LOSS = pd.read_csv(TEST_LOSS_path, index_col=0)
+                # else:
+                #     TEST_LOSS = pd.DataFrame()
+                TEST_LOSS = pd.DataFrame()
 
                 for epoch in range(START_EPOCH, END_EPOCH, EPOCH_STEP):
                     epoch += EPOCH_STEP
+
                     CHECKPOINT = [BPNAME, STEP, epoch]
                     TEST_recorder_Dict = MyTrainAndTest.test(TEST_PARAMS_DICT, CHECKPOINT)
                     TEST_LOSS = TEST_LOSS.append(pd.DataFrame(TEST_recorder_Dict), ignore_index=True)

@@ -90,7 +90,9 @@ def image2gif(input_folder,outputname):
 def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
     raw_data = np.load(inputpath)
     target_data = raw_data['input']
+    target_data = target_data.squeeze()
     predicted_data = raw_data['output']
+    predicted_data = predicted_data.squeeze()
     if not os.path.exists(os.path.join(output_folder,'image')):
         os.makedirs(os.path.join(output_folder,'image'))
 
@@ -115,25 +117,26 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
 if __name__ == '__main__':
 
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('BPNAME')
-    parser.add_argument('STEP')
-    parser.add_argument("VERSION")
-    parser.add_argument('EPOCH')
-    parser.add_argument('CASE')
-    args = parser.parse_args()
-    parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('BPNAME')
+    # parser.add_argument('STEP')
+    # parser.add_argument("VERSION")
+    # parser.add_argument('EPOCH')
+    # parser.add_argument('CASE')
+    # args = parser.parse_args()
+    # parser.parse_args()
 
-    BPNAME = args.BPNAME
-    STEP = int(args.STEP)
-    VERSION = int(args.VERSION)
-    EPOCH = int(args.EPOCH)
-    CASE = args.CASE
+    # BPNAME = args.BPNAME
+    # STEP = int(args.STEP)
+    # VERSION = int(args.VERSION)
+    # EPOCH = int(args.EPOCH)
+    # CASE = args.CASE
 
-    # STEP = 6
-    # VERSION = 1
-    # EPOCH = 10
-    # CASE = 'case2'
+    BPNAME='BP032'
+    STEP = 1
+    VERSION = 1
+    EPOCH = 2000
+    CASE = '1'
 
     FIGSIZE = (8,3)
     DPI = 100
