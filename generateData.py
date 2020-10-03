@@ -4,6 +4,7 @@ import os
 from scipy import integrate
 from tqdm import tqdm
 from sklearn import preprocessing
+from tools import area_extract
 
 class GenerateData():
     """ Class used for creating training npz files from case npy files.
@@ -94,15 +95,14 @@ class GenerateData():
         BP_info = np.load(os.path.join(self.INPUT_FOLDER,'_info.npz'),allow_pickle=True)
         self.LOCATION = BP_info['IJPOINTS'] # 提取破地点，二级list [[I,J],[I,J]] I为高度即行数，J为宽度即列数
         Inflow_DF = BP_info['INFLOW_DF'][0] # 提取破地点的所有case的入流情况，以DataFrame形式返回
-        DEM = BP_info['DEM'][0] #提取当前研究区域的绝对数字高程数据，以ndarray形式返回
+        #DEM = BP_info['DEM'][0] #提取当前研究区域的绝对数字高程数据，以ndarray形式返回
 
-        #对DEM进行归一化处理，采用MinMaxScaler
-        scaler = preprocessing.MinMaxScaler()
-        DEM_MinMax = scaler.fit_transform(DEM)
-        #转化为array并拓展为四阶Array,并于后面broadcast
-        DEM_MinMax_Array = np.array(DEM_MinMax)
-        DEM_MinMax_Array = np.tile(DEM_MinMax_Array,(self.N_TIMESTEMP-self.STEP,1))
-        DEM_MinMax_Array = DEM_MinMax_Array.reshape(-1,1,self.HEIGHT,self.WIDTH) 
+        # #对DEM进行归一化处理，采用MinMaxScaler
+        # scaler = preprocessing.MinMaxScaler()
+        # DEM_MinMax = scaler.fit_transform(DEM)
+        # #转化为array并拓展为四阶Array,并于后面broadcast
+        # DEM_MinMax_Array = np.array(DEM_MinMax)
+        # DEM_MinMax_Array = np.tile(DEM_MinMax_Array,(self.N_TIMESTEMP-self.STEP,1,1,1))
         
         N_addchannel = int(self.STEP/self.N_DELTA) # 根据计算步长 %STEP% 及分段积分步长 %N_DELTA% 计算增加的通道个数
         N_sample = self.N_TIMESTEMP-self.STEP # 根据时刻计数即总步长 %N_TIMESTEMP% 和计算步长 %STEP% 计算完整的样本个数
@@ -120,6 +120,18 @@ class GenerateData():
 
             #对某个case内做sample的循环，每个case包含N_sample个样本
             for sample_id in range(N_sample):
+
+                #对教师值和学生值的范围进行掩码处理，非研究区域的值归零
+
+                learning_sample = learning_value[sample_id]
+                learning_sample[0] = area_extract(learning_sample[1],learning_sample[0],0,0) #通过mask根据水流速度范围提取水深的范围
+                learning_value[sample_id] = learning_sample
+
+                teacher_sample = teacher_value[sample_id]
+                teacher_sample[0] = area_extract(teacher_sample[1],teacher_sample[0],0,0) #通过mask根据水流速度范围提取水深的范围
+                teacher_value[sample_id] = teacher_sample
+
+
                 #提取当前sample需要积分的入流index,以二级list[[0,1,2],[2,3,4]]的形式返回
                 integrate_index = integrate_sequence[sample_id] 
 
@@ -130,17 +142,20 @@ class GenerateData():
                     integrate_item = inflow_data[integrate_sub_index]
                     #入流积分进行辛普森公式积分
                     result = integrate.simps(y = integrate_item.flatten(), dx = self.TIMEINTERVAL*60)
+                    result = result/10000000 #进行小数定标标准化
 
                     #积分结果填充到初始入流数组的对应位置
                     for location in self.LOCATION:
                         inint_inflow_Array[sample_id, channel_id, location[0]-1, location[1]-1 ] = result
             
             #在第一阶上连接学习值和入流值
-            learning_data = np.concatenate((DEM_MinMax_Array, learning_value, inint_inflow_Array),axis = 1)
+            # learning_data = np.concatenate((DEM_MinMax_Array, learning_value, inint_inflow_Array),axis = 1)
+            learning_data = np.concatenate((learning_value, inint_inflow_Array),axis = 1)
             teacher_data = teacher_value
 
             savename = os.path.join(self.OUTPUT_FOLDER, f'Step_{self.STEP}', case_name_Str[4:]+'.npz')
             np.savez(savename, learning_data=learning_data, teacher_data=teacher_data)
+
         self.NPZ_COUNT = case_id +1
 
 
@@ -162,7 +177,7 @@ if __name__ == "__main__":
         INPUT = f'../NpyData/{BPNAME}'
         OUTPUT = f'../TrainData/{BPNAME}'
 
-        print(f"\n Generating{BPNAME} STEP={STEP} data.")
+        print(f"\n Generating {BPNAME} STEP={STEP} data.")
         mygenerater = GenerateData(INPUT, OUTPUT, TIMEINTERVAL, N_DELTA, STEP, BPNAME)
         mygenerater.run()
 

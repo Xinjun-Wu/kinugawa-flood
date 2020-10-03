@@ -138,7 +138,7 @@ if __name__ == '__main__':
     EPOCH = 2000
     CASE = '1'
 
-    FIGSIZE = (8,3)
+    FIGSIZE = (3,6)
     DPI = 100
     MAX_VALUE = 5
 

@@ -13,8 +13,10 @@ from tqdm import tqdm
 from dataSet import CustomizeDataSets
 import torch.nn.functional as F
 
+from tools import area_extract
+
 class TrainAndTest():
-    def __init__(self, model, dataset, input_folder='../Save/BP028/Step_1/', output_folder='../Save/BP028/Step_1/', 
+    def __init__(self, model, dataset, add_data = None, input_folder='../Save/BP028/Step_1/', output_folder='../Save/BP028/Step_1/', 
                     checkpoint=None, read_version=1, save_version=1):
         self.INPUT_FOLDER = input_folder
         self.OUTPUT_FOLDER = output_folder
@@ -27,6 +29,8 @@ class TrainAndTest():
         if dataset is not None:
             self.STEP = dataset.STEP
             self.BPNAME = dataset.BPNAME
+        self.ADD_DATA = add_data
+        self.n_add_channel = add_data.n_add_channel
         self.CHECKPOINT = checkpoint
         self.CHECKBP = None
         self.CHECKSTEP = None
@@ -136,6 +140,10 @@ class TrainAndTest():
             #####  Load Clock  ###### 
             load_start = time.time()
             for batch_id, (X_tensor, Y_tensor) in enumerate(trainloader):
+
+                #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
+                if self.ADD_DATA is not None:
+                    X_tensor = self.ADD_DATA.add_dem(X_tensor)
             
                 X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                 Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
@@ -167,6 +175,10 @@ class TrainAndTest():
                     #####  Load Clock  ###### 
                     load_start = time.time()
                     for batch_id, (X_tensor, Y_tensor) in enumerate(validationloader):
+
+                        #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
+                        if self.ADD_DATA is not None:
+                            X_tensor = self.ADD_DATA.add_dem(X_tensor)
 
                         X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                         Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
@@ -223,7 +235,7 @@ class TrainAndTest():
                 ######################  Save Recorder  ####################################
             if epoch % TRAIN_RECORDER_SAVECYCLE == 0 or epoch == TRAIN_EPOCHS :
                 RECORDER_PD.to_csv(os.path.join(self.OUTPUT_FOLDER, 'recorder',
-                                                        f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.4f')
+                                                        f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.4f',index = False)
 
 
     def test(self, test_params_Dict, checkpoint):
@@ -278,15 +290,26 @@ class TrainAndTest():
                 X_tensor = X_Input.unsqueeze(0)
                 Y_tensor = Y_Input.unsqueeze(0)
 
+                #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
+                if self.ADD_DATA is not None:
+                    X_tensor = self.ADD_DATA.add_dem(X_tensor)
+
                 X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                 Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
 
-                if len(Y_output_tensor_gpu_list ) > TEST_STEP-1 :#当保存的Y的个数大于或等于STEP时，使用预测的结果作为下一个周期的输入
-                    X_input_tensor_gpu[:,1:4,:,:] = Y_output_tensor_gpu_list[sample_id - TEST_STEP]
+                # if len(Y_output_tensor_gpu_list ) > TEST_STEP-1 :#当保存的Y的个数大于或等于STEP时，使用预测的结果作为下一个周期的输入
+                #     X_input_tensor_gpu[:,1:4,:,:] = Y_output_tensor_gpu_list[sample_id - TEST_STEP]
 
                 self.MODEL.zero_grad()
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
-                Y_output_tensor_gpu[:,0,:,:] = F.relu(Y_output_tensor_gpu[:,0,:,:]+0.01)-0.01
+
+                #利用buffered输入的水流x方向流量范围的mask来提取输出的范围
+                for n in range(3):
+                    Y_output_tensor_gpu[0,n] = area_extract(X_input_tensor_gpu[0,self.n_add_channel+1],
+                                                    Y_output_tensor_gpu[0,n],5,3)
+
+                #剔除水深值小于0的值
+                Y_output_tensor_gpu[:,0,:,:] = F.relu(Y_output_tensor_gpu[:,self.n_add_channel,:,:])
 
                 Y_output_tensor_gpu_list.append(Y_output_tensor_gpu)
 
@@ -309,7 +332,7 @@ class TrainAndTest():
             savepath = os.path.join(self.OUTPUT_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{TEST_CASE_NAME}.npz')
             np.savez(savepath, input=Y_input_Array, output=Y_output_Array)
             #TEST_recorder_Dict[str(TEST_CASE_NAME)] = LOSS_ITEM
-            print(f'Model with [BP={self.CHECKBP}, Step={self.CHECKSTEP}, epoch={CHECK_EPOCH}] test loss in {TEST_CASE_NAME} : {average(LOSS_ITEM)}')
+            #print(f'Model with [BP={self.CHECKBP}, Step={self.CHECKSTEP}, epoch={CHECK_EPOCH}] test loss in {TEST_CASE_NAME} : {average(LOSS_ITEM)}')
 
         return TEST_recorder_Dict
 

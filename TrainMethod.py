@@ -13,6 +13,7 @@ from tqdm import tqdm
 from dataSet import CustomizeDataSets
 from TrainAndTest import TrainAndTest
 from Select_Net import select_net
+from tools import data_decorater
 
 if __name__ == "__main__":
         ###################### Initialize Parameters ####################################
@@ -65,8 +66,9 @@ if __name__ == "__main__":
 
             mydataset = CustomizeDataSets(DATA_FOLDER,BPNAME,STEP,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
-            model = select_net(GROUP_ID,int(STEP/N_DELTA)+4)
-            MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
+            add_dem = data_decorater(INFO_path)
+            model = select_net(GROUP_ID, add_dem.n_add_channel+3+int(STEP/N_DELTA))
+            MyTrainAndTest = TrainAndTest(model, mydataset, add_dem, INPUT_FOLDER, OUTPUT_FOLDER,
                                             CHECKPOINT, READ_VERSION, SAVE_VERSION)
             ############################## Train Paramters #################################
             LR = 0.0001

@@ -14,6 +14,7 @@ from tqdm import tqdm
 from dataSet import CustomizeDataSets
 from TrainAndTest import TrainAndTest
 from Select_Net import select_net
+from tools import data_decorater
 
 if __name__ == "__main__":
     ###################### Initialize Parameters ####################################
@@ -78,9 +79,13 @@ if __name__ == "__main__":
                                 }
 
                 #model = ConvNet_2(3+int(STEP/6))
-                model = select_net(GROUP_ID,int(STEP/N_DELTA)+4)
-                MyTrainAndTest = TrainAndTest(model, None, INPUT_FOLDER, OUTPUT_FOLDER,
-                                                CHECKPOINT, READ_VERSION, SAVE_VERSION)   
+                # model = select_net(GROUP_ID,int(STEP/N_DELTA)+4)
+                # MyTrainAndTest = TrainAndTest(model, None, INPUT_FOLDER, OUTPUT_FOLDER,
+                #                                 CHECKPOINT, READ_VERSION, SAVE_VERSION)   
+                add_dem = data_decorater(INFO_path)
+                model = select_net(GROUP_ID, add_dem.n_add_channel+3+int(STEP/N_DELTA))
+                MyTrainAndTest = TrainAndTest(model, None, add_dem, INPUT_FOLDER, OUTPUT_FOLDER,
+                                            CHECKPOINT, READ_VERSION, SAVE_VERSION)
 
                 TEST_LOSS_path = os.path.join(OUTPUT_FOLDER, 'test', 
                                 f'case{CASENAME} test loss.csv')
@@ -98,8 +103,8 @@ if __name__ == "__main__":
                     TEST_LOSS = TEST_LOSS.append(pd.DataFrame(TEST_recorder_Dict), ignore_index=True)
 
                     if epoch % SAVE_CYCLE == 0:
-                        TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f')
-                TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f')
+                        TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
+                TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
                 print('Done!')
 
             

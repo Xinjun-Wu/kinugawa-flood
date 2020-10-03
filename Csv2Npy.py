@@ -99,6 +99,9 @@ class Csv2Npy():
     def _get_data(self, casefolder_path):
 
         index_List = os.listdir(casefolder_path)
+        # if except_list is not None:
+        #     for except_file in except_list:
+        #         index_List.remove(except_file)
         index_List.sort(key=lambda x:int(x.split('_')[1][:-4]))
         index_path_List = list(map(lambda x:os.path.join(casefolder_path,x), index_List))
 
@@ -120,10 +123,13 @@ class Csv2Npy():
 
         return watersituation
 
-    def _walk_cases(self):
+    def _walk_cases(self, except_list=None):
 
         self._get_info_()
         casefolder_List = os.listdir(self.INPUT_FOLDER)
+        if except_list is not None:
+            for except_file in except_list:
+                casefolder_List.remove(except_file)
         casefolder_List.sort(key=lambda x:int(x.split('_')[0][4:]), reverse=False)
 
         #遍历每个case
@@ -137,13 +143,14 @@ class Csv2Npy():
             self.NPY_COUNT += 1
        
 
-    def run(self):
-        self._walk_cases()
+    def run(self,except_list):
+        self._walk_cases(except_list)
         print(f"Have generated {self.NPY_COUNT} .npy files")
 
 if __name__ == "__main__":
     BPNAME_List = ['BP028']
     BPNAME_List = ['BP032']
+    except_list = None
 
     for BPNAME in BPNAME_List:
 
@@ -151,4 +158,4 @@ if __name__ == "__main__":
         OUTPUT = f'../NpyData/{BPNAME}'
 
         mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
-        mynpy.run()
+        mynpy.run(except_list)
