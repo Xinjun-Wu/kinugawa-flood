@@ -21,3 +21,9 @@ optimize
     细节优化
 
 
+submit 002 <debug>
+2020-10-03 
+debug 
+    TrainAndTest.py 在test时或者将来的预测时，初始时刻使用破堤点作为目标区域生成 buffered mask, 其他时刻使用上一时刻的洪水范围
+
+

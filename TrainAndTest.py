@@ -304,8 +304,16 @@ class TrainAndTest():
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
 
                 #利用buffered输入的水流x方向流量范围的mask来提取输出的范围
+
+                if sample_id == 0: 
+                    # 初始时刻使用破堤点作为目标区域生成 buffered mask
+                    target_area = X_input_tensor_gpu[0,self.n_add_channel+3] 
+                else:
+                    # 后续时刻使用上一时刻的洪水范围作为目标区域生成buffered mask
+                    target_area = X_input_tensor_gpu[0,self.n_add_channel+1]
+
                 for n in range(3):
-                    Y_output_tensor_gpu[0,n] = area_extract(X_input_tensor_gpu[0,self.n_add_channel+1],
+                    Y_output_tensor_gpu[0,n] = area_extract(target_area,
                                                     Y_output_tensor_gpu[0,n],5,3)
 
                 #剔除水深值小于0的值
