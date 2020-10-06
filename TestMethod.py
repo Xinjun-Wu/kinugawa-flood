@@ -25,14 +25,14 @@ if __name__ == "__main__":
     BPNAME_List = ['BP032']
     STEP_List = [1,3]
     STEP_List = [1]
-    START_EPOCH =0
-    END_EPOCH = 2000
+    START_EPOCH =1000
+    END_EPOCH = 1600
     EPOCH_STEP = 10
     CHECKPOINT = None
     SAVE_CYCLE = 10
     TEST_CASE_LIST = [2,6]
     TEST_CASE_LIST = np.linspace(1,31,31,True,dtype=np.int)
-    TEST_CASE_LIST = [28,29,30,31]
+    TEST_CASE_LIST = [1]
     #CASENAME = 6 #进行测试的case名称
     N_DELTA = 1
 

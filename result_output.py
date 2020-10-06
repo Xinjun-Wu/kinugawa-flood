@@ -12,6 +12,7 @@ import time
 import datetime
 from tqdm import tqdm
 from matplotlib import rcParams
+from mpl_toolkits.axes_grid1 import AxesGrid
 import argparse
 import sys
 
@@ -20,39 +21,94 @@ import sys
 def customize_plot(target_value, predicted_value, title, figsize, dpi=100, max_value=4):
 
     config = {
-    "font.family":'serif',
-    "font.size": 8,
-    "mathtext.fontset":'stix',
-    "font.serif": ['Times New Roman'],
-    }
+        "font.family":'serif',
+        "font.size": 8,
+        "mathtext.fontset":'stix',
+        "font.serif": ['Times New Roman'],
+        }
     rcParams.update(config)
 
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=figsize, dpi=dpi)
+    para_data =data = np.array([target_value, predicted_value, target_value-predicted_value])
+    para_figsize = figsize
+    para_dpi = dpi
+    n_row = 3
+    n_col = 3
+
+    row_ylabel = ['WaterDepth(m)', 'Velocity(ms-1)X', 'Velocity(ms-1)Y']
+    #row_xlabel = ['a','b','c']
+    col_titles = ['Target', 'Prediction', 'Target-Prediction']
+
+
+    fig = plt.figure(figsize=para_figsize, dpi=para_dpi)
     fig.suptitle(title)
 
-    ax0 = axs[0]
-    im0 = ax0.imshow(target_value,cmap =cm.jet,clim=(0,max_value))
-    #ax0.axis('tight')
-    #position=fig.add_axes([0.3, 0.05, 0.1, 0.03])
-    cb0 = fig.colorbar(mappable=im0,ax=ax0)
-    ax0.set_title('Target Water Depth')
-    ax0.axis('off')
+    grid = AxesGrid(fig, (0.05,0.05,0.9,0.85),  # similar to subplot(122)
+                    nrows_ncols=(n_row, n_col),
+                    axes_pad=0.20,
+                    label_mode="all",
+                    share_all=True,
+                    cbar_location="right",
+                    cbar_mode="edge",
+                    cbar_size="7%",
+                    cbar_pad="10%",
+                    )
 
-    ax1 = axs[1]
-    im1 = ax1.imshow(predicted_value,cmap =cm.jet,clim=(0,max_value))
-    #ax1.axis('tight')
-    cb1 = fig.colorbar(mappable=im1,ax=ax1)
-    ax1.set_title('Predicted Water Depth')
-    ax1.axis('off')
+    for col in range(n_col): #target, prediction, target-prediction
+        for row in range(n_row): # 遍历三通道
+            plot_data = para_data[col,row] 
 
-    ax2 = axs[2]
-    im2 = ax2.imshow(target_value-predicted_value,cmap=plt.get_cmap('RdBu'),clim=(-0.6,0.6))
-    #ax2.axis('tight')
-    cb2 = fig.colorbar(mappable=im2,ax=ax2)
-    ax2.set_title('Difference Water Depth\n(Taget - Predicted)')
-    ax2.axis('off')
+            i = row*n_col+col
+            ax = grid[i]
 
-    #plt.tight_layout()
+            if col != 2 and row == 0:
+                im = ax.imshow(plot_data, cmap=cm.jet, clim=(0,5),aspect = 0.35) # 水深的目标值与预测值的分布图
+            elif col == 2 and row == 0:
+                im = ax.imshow(plot_data, cmap=plt.get_cmap('RdBu'), clim=(-0.5,0.5),aspect = 0.35) # 水深的误差值的分布图
+            elif col!= 2 and row != 0:
+                im = ax.imshow(plot_data, cmap=cm.jet, clim=(-1,1),aspect = 0.35) # 流速的目标值与预测值的分布图
+            else:
+                im = ax.imshow(plot_data, cmap=plt.get_cmap('RdBu'), clim=(-0.1,0.1),aspect = 0.35) # 流速的误差的分布图
+            #ax.set_axis_off()
+            ax.tick_params(bottom=False,top=False,left=False,right=False,
+            labelbottom=False, labeltop=False, labelleft=False, labelright=False)
+            #ax.set_xlabel(row_xlabel[row]+f'({col+1})')
+            #fig.savefig('../comparison.png')
+            if i % n_col:
+                cb = grid.cbar_axes[i//n_col].colorbar(im)
+                cb.ax.tick_params(direction='in',size=1)
+
+            if row == 0:
+                ax.set_title(f'{col_titles[col]}')
+
+            if col == 0:
+                ax.set_ylabel(row_ylabel[row])
+
+    # fig, axs = plt.subplots(nrows=1, ncols=3, figsize=figsize, dpi=dpi)
+    # fig.suptitle(title)
+
+    # ax0 = axs[0]
+    # im0 = ax0.imshow(target_value,cmap =cm.jet,clim=(0,max_value))
+    # #ax0.axis('tight')
+    # #position=fig.add_axes([0.3, 0.05, 0.1, 0.03])
+    # cb0 = fig.colorbar(mappable=im0,ax=ax0)
+    # ax0.set_title('Target Water Depth')
+    # ax0.axis('off')
+
+    # ax1 = axs[1]
+    # im1 = ax1.imshow(predicted_value,cmap =cm.jet,clim=(0,max_value))
+    # #ax1.axis('tight')
+    # cb1 = fig.colorbar(mappable=im1,ax=ax1)
+    # ax1.set_title('Predicted Water Depth')
+    # ax1.axis('off')
+
+    # ax2 = axs[2]
+    # im2 = ax2.imshow(target_value-predicted_value,cmap=plt.get_cmap('RdBu'),clim=(-0.6,0.6))
+    # #ax2.axis('tight')
+    # cb2 = fig.colorbar(mappable=im2,ax=ax2)
+    # ax2.set_title('Difference Water Depth\n(Taget - Predicted)')
+    # ax2.axis('off')
+
+    # #plt.tight_layout()
 
     return fig
 
@@ -103,9 +159,9 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
 
         time_index = n + step
         time_stamp = str(timedelta(seconds=time_index*600) - timedelta(seconds=0))
-        figtitle = f'Water Depth in {casename}\n {time_stamp}'
+        figtitle = f' case {casename} in {time_stamp}'
 
-        fig = customize_plot(target_value=target_data[n][0], predicted_value=predicted_data[n][0],
+        fig = customize_plot(target_value=target_data[n], predicted_value=predicted_data[n],
                     title=figtitle,figsize=figsize,dpi=dpi,max_value=max_value)
         fig.savefig(os.path.join(output_folder,'image',f"{time_index}.png"))
         plt.close()
@@ -135,10 +191,10 @@ if __name__ == '__main__':
     BPNAME='BP032'
     STEP = 1
     VERSION = 1
-    EPOCH = 2000
+    EPOCH = 8000
     CASE = '1'
 
-    FIGSIZE = (3,6)
+    FIGSIZE = (5,10)
     DPI = 100
     MAX_VALUE = 5
 

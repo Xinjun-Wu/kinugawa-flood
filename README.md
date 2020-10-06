@@ -1,7 +1,7 @@
 # kinugawa-flood
 新的版本
 
-submit 001 <add/delete/optimize>
+submit 001 <add/debug/delete/optimize>
 2020-10-03 
 add
     Csv2Npy.py 添加忽略文件及文件夹功能，在遍历所有case列表时，自动跳过 except_list 内的条目。
@@ -26,4 +26,13 @@ submit 002 <debug>
 debug 
     TrainAndTest.py 在test时或者将来的预测时，初始时刻使用破堤点作为目标区域生成 buffered mask, 其他时刻使用上一时刻的洪水范围
 
+submit 003 <add/optimize>
+2020-10-06 
 
+add 
+    tootls.py 生成掩膜时，自动将张量输入转化为numpy array
+                两种淹没生成方式，less or less_equal
+
+optimize
+    results_output.py 优化生成图片的排版
+     其他关联tools.py相应的更改

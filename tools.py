@@ -2,6 +2,7 @@ import numpy as np
 import numpy.ma as ma
 from sklearn import preprocessing
 import torch
+from torch import tensor
 from torch._C import device
 
 def _search_edge(input,output,point_i,point_j, height, width):
@@ -32,14 +33,31 @@ def _mask_buffer(input_mask,height,width):
             _search_edge(input_mask,output_mask,i,j,height,width)
     return output_mask
 
-def area_extract(target_area, extract_area, buffer_height,buffer_width):
+def area_extract(target_area, extract_area, buffer_height,buffer_width, equal_value, less_equal_value):
     """ #输入为二阶array或者tensor 
         #通过目标区域的buffered mask 提取下一时刻的研究区域
-        #目标区域的掩码识别值为0，当值为0时，掩码值为True.否则为False
+        #目标区域的掩码识别值为equal_value，当值为等于mask_value时，掩码值为True.否则为False
+        #目标区域的掩码识别值为less_equal_value，当值为小于等于mask_value时，掩码值为True.否则为False
+        #less_equal_value和equal_value二选一,另一个值输入为None
         #buffer 方式为矩形buffer,根据每一个边缘点的矩形范围创建buffer
         # 
     """
-    target_masked = ma.masked_equal(target_area,0)
+    if isinstance ( target_area, torch.Tensor):
+        target_area = target_area.cpu()
+        target_area = target_area.numpy()
+
+    if isinstance (extract_area, torch.Tensor):
+        extract_area = extract_area.cpu()
+        extract_area = extract_area.numpy()
+
+    if equal_value is not None and less_equal_value is None:
+        target_masked = ma.masked_equal(target_area,equal_value)
+    elif equal_value is None and less_equal_value is not None:
+        target_masked = ma.masked_less_equal(target_area, less_equal_value)
+    else:
+        raise ValueError('equal_value 和 less_equal_value 其一必须为None')
+
+
     input_mask = target_masked.mask
     if buffer_height==0 and buffer_width ==0:
         buffered_mask = input_mask

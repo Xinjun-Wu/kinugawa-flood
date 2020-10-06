@@ -124,11 +124,11 @@ class GenerateData():
                 #对教师值和学生值的范围进行掩码处理，非研究区域的值归零
 
                 learning_sample = learning_value[sample_id]
-                learning_sample[0] = area_extract(learning_sample[1],learning_sample[0],0,0) #通过mask根据水流速度范围提取水深的范围
+                learning_sample[0] = area_extract(learning_sample[1],learning_sample[0],0,0,0,None) #通过mask根据水流速度范围提取水深的范围
                 learning_value[sample_id] = learning_sample
 
                 teacher_sample = teacher_value[sample_id]
-                teacher_sample[0] = area_extract(teacher_sample[1],teacher_sample[0],0,0) #通过mask根据水流速度范围提取水深的范围
+                teacher_sample[0] = area_extract(teacher_sample[1],teacher_sample[0],0,0,0,None) #通过mask根据水流速度范围提取水深的范围
                 teacher_value[sample_id] = teacher_sample
 
 

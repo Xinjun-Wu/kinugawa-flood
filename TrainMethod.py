@@ -26,7 +26,7 @@ if __name__ == "__main__":
     STEP_List = [1,3]
     STEP_List = [1]
     CHECKPOINT = None
-    #CHECKPOINT = ['BP028', 1, 590] ###STEP == 1 , EPOCH == 590
+    CHECKPOINT = ['BP032', 1, 2000] ###STEP == 1 , EPOCH == 590
     CHECK_EACH_STEP = False
     CHECK_EACH_BP = False
     SHUFFLE = True
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
             TRAIN_PARAMS_DICT = {
-                                'EPOCHS' : 2000,
+                                'EPOCHS' : 8000,
                                 'BATCHSIZES' : 128,
                                 'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,
