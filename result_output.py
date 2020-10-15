@@ -42,13 +42,13 @@ def customize_plot(target_value, predicted_value, title, figsize, dpi=100, max_v
     fig = plt.figure(figsize=para_figsize, dpi=para_dpi)
     fig.suptitle(title)
 
-    grid = AxesGrid(fig, (0.05,0.05,0.9,0.85),  # similar to subplot(122)
+    grid = AxesGrid(fig, (0.05,0.05,0.9,0.89),  # similar to subplot(122)
                     nrows_ncols=(n_row, n_col),
-                    axes_pad=0.20,
+                    axes_pad=0.3,
                     label_mode="all",
                     share_all=True,
                     cbar_location="right",
-                    cbar_mode="edge",
+                    cbar_mode="each",
                     cbar_size="7%",
                     cbar_pad="10%",
                     )
@@ -61,21 +61,23 @@ def customize_plot(target_value, predicted_value, title, figsize, dpi=100, max_v
             ax = grid[i]
 
             if col != 2 and row == 0:
-                im = ax.imshow(plot_data, cmap=cm.jet, clim=(0,5),aspect = 0.35) # 水深的目标值与预测值的分布图
+                im = ax.imshow(plot_data, cmap=cm.jet, clim=(0,5),aspect = 0.4) # 水深的目标值与预测值的分布图
             elif col == 2 and row == 0:
-                im = ax.imshow(plot_data, cmap=plt.get_cmap('RdBu'), clim=(-0.5,0.5),aspect = 0.35) # 水深的误差值的分布图
+                im = ax.imshow(plot_data, cmap=plt.get_cmap('RdBu'), clim=(-0.5,0.5),aspect = 0.4) # 水深的误差值的分布图
             elif col!= 2 and row != 0:
                 im = ax.imshow(plot_data, cmap=cm.jet, clim=(-1,1),aspect = 0.35) # 流速的目标值与预测值的分布图
             else:
-                im = ax.imshow(plot_data, cmap=plt.get_cmap('RdBu'), clim=(-0.1,0.1),aspect = 0.35) # 流速的误差的分布图
+                im = ax.imshow(plot_data, cmap=plt.get_cmap('RdBu'), clim=(-0.1,0.1),aspect = 0.4) # 流速的误差的分布图
             #ax.set_axis_off()
             ax.tick_params(bottom=False,top=False,left=False,right=False,
             labelbottom=False, labeltop=False, labelleft=False, labelright=False)
             #ax.set_xlabel(row_xlabel[row]+f'({col+1})')
             #fig.savefig('../comparison.png')
-            if i % n_col:
-                cb = grid.cbar_axes[i//n_col].colorbar(im)
-                cb.ax.tick_params(direction='in',size=1)
+            # if i % n_col:
+            #     cb = grid.cbar_axes[i//n_col].colorbar(im)
+            #     cb.ax.tick_params(direction='in',size=1)
+            cb = grid.cbar_axes[i].colorbar(im)
+            cb.ax.tick_params(direction='in',size=1)
 
             if row == 0:
                 ax.set_title(f'{col_titles[col]}')
@@ -137,11 +139,12 @@ def data2csv(output_foldetr,data,step):
 
 def image2gif(input_folder,outputname):
     pngList = glob.glob(input_folder + "\*.png")
+    #pngList.sort(key=lambda x:int(x.split('/')[-1][:-4]), reverse=False)
     images = []
     for png in pngList:
         im=Image.open(png)
         images.append(im)
-    images[0].save(input_folder+os.sep+outputname, save_all=True, append_images=images, loop=0, duration=1000)
+    images[0].save(input_folder+os.sep+outputname, save_all=True, append_images=images, loop=0, duration=500)
 
 def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
     raw_data = np.load(inputpath)
@@ -163,11 +166,11 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
 
         fig = customize_plot(target_value=target_data[n], predicted_value=predicted_data[n],
                     title=figtitle,figsize=figsize,dpi=dpi,max_value=max_value)
-        fig.savefig(os.path.join(output_folder,'image',f"{time_index}.png"))
+        fig.savefig(os.path.join(output_folder,'image',f"{time_index:03}.png"))
         plt.close()
 
     
-    #image2gif(output_folder, f'{casename}.gif')
+    image2gif(output_folder+'/image', f'{casename}.gif')
 
 
 if __name__ == '__main__':
@@ -188,7 +191,8 @@ if __name__ == '__main__':
     # EPOCH = int(args.EPOCH)
     # CASE = args.CASE
 
-    BPNAME='BP032'
+    BPNAME='BP028'
+
     STEP = 1
     VERSION = 1
     EPOCH = 8000

@@ -21,55 +21,60 @@ if __name__ == "__main__":
     SAVE_VERSION = 1
     TEST_SIZE = 0.3
     RANDOM_SEED = 120
-    BPNAME_List = ['BP028','BP033','BP043']
-    BPNAME_List = ['BP032']
-    STEP_List = [1,3]
+    # BPNAME_List = ['BP028','BP033','BP043']
+    # BPNAME_List = ['BP032']
+    #STEP_List = [1,3]
+    GROUP_ID_List = ['Ki1','Ki2','Ki3','Ki4','Ki5']
     STEP_List = [1]
+
     CHECKPOINT = None
-    CHECKPOINT = ['BP032', 1, 2000] ###STEP == 1 , EPOCH == 590
+    CHECKPOINT = ['Ki1', 1, 2000] ###STEP == 1 , EPOCH == 590
     CHECK_EACH_STEP = False
-    CHECK_EACH_BP = False
+    CHECK_EACH_GROUP = False
     SHUFFLE = True
     N_DELTA = 1
 
 
     #提取checkpoint的信息
     if CHECKPOINT is not None:
-        START_BP = CHECKPOINT[0]
-        START_BP_INDEX = BPNAME_List.index(START_BP)
+        START_GROUP = CHECKPOINT[0]
+        START_GROUP_INDEX = GROUP_ID_List.index(START_GROUP)
 
         STRT_STEP = CHECKPOINT[1]
         START_STEP_INDEX = STEP_List.index(STRT_STEP)
     else:
-        START_BP_INDEX = 0
+        START_GROUP_INDEX = 0
         START_STEP_INDEX = 0
 
         
     #根据checkpoint重构循环队列
-    for BPNAME in BPNAME_List[START_BP_INDEX:] if isinstance(BPNAME_List[START_BP_INDEX:],list) else [BPNAME_List[START_BP_INDEX:]]:
+    for GROUP_ID in GROUP_ID_List[START_GROUP_INDEX:] if isinstance(GROUP_ID_List[START_GROUP_INDEX:],list) else [GROUP_ID_List[START_GROUP_INDEX:]]:
         
-        INFO_path = f'../NpyData/{BPNAME}/_info.npz'
-        INFO_file = np.load(INFO_path)
-        GROUP_ID = INFO_file['GROUP_ID']
+        # INFO_path = f'../NpyData/{BPNAME}/_info.npz'
+        # INFO_file = np.load(INFO_path)
+        # GROUP_ID = INFO_file['GROUP_ID']
 
         for STEP in STEP_List[START_STEP_INDEX:] if isinstance(STEP_List[START_STEP_INDEX:], list) else [STEP_List[START_STEP_INDEX:]]:
 
             if CHECKPOINT is not None:
-                CHECKPOINT[0] = BPNAME
+                CHECKPOINT[0] = GROUP_ID
                 CHECKPOINT[1] = STEP
 
-            INPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-            OUTPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-            DATA_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}/'
+            INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+            OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+            DATA_FOLDER = f'../TrainData'
+            # EXCEPT_BP = ['BP032']
+            # EXCEPT_CASE = ['BP028_001']
+            EXCEPT_BP = None
+            EXCEPT_CASE = None
 
-            print(f'BPNAME = {BPNAME}, STEP = {STEP}')
+            print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
 
-            mydataset = CustomizeDataSets(DATA_FOLDER,BPNAME,STEP,TEST_SIZE,SHUFFLE,RANDOM_SEED)
+            mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
-            add_dem = data_decorater(INFO_path)
-            model = select_net(GROUP_ID, add_dem.n_add_channel+3+int(STEP/N_DELTA))
-            MyTrainAndTest = TrainAndTest(model, mydataset, add_dem, INPUT_FOLDER, OUTPUT_FOLDER,
-                                            CHECKPOINT, READ_VERSION, SAVE_VERSION)
+            #add_dem = data_decorater(INFO_path)
+            model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
+            MyTrainAndTest = TrainAndTest(model,mydataset,INPUT_FOLDER,OUTPUT_FOLDER,GROUP_ID,CHECKPOINT,READ_VERSION,SAVE_VERSION)
             ############################## Train Paramters #################################
             LR = 0.0001
             Train_lambda = lambda epoch: 1/np.sqrt(((epoch % 500)+1.0))
@@ -93,7 +98,7 @@ if __name__ == "__main__":
             MyTrainAndTest.train(TRAIN_PARAMS_DICT)
             if not CHECK_EACH_STEP:
                 CHECKPOINT = None
-        if not CHECK_EACH_BP:
+        if not CHECK_EACH_GROUP:
             CHECKPOINT = None
         START_STEP_INDEX = 0
     

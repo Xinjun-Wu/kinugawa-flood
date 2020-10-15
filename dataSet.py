@@ -1,3 +1,4 @@
+
 from random import shuffle
 import numpy as np 
 import torch
@@ -9,15 +10,18 @@ import datetime
 from sklearn.model_selection import train_test_split
 
 class CustomizeDataSets():
-    def __init__(self, input_folder='../TrainData/BP028/Step_1/', bpname = "BP028",step = 1, 
+    def __init__(self, input_folder='../TrainData',step = 1, group_id = 'Ki1', 
+                except_bp = ['BP032'], except_case = ['BP028_001, BP032_014'], 
                 test_size=0.3, shuffle = True, random_seed=120):
         """
         数据将按照tvt_ratio的比例划分train,validdaton,test数据集
 
         """
         self.INPUT_FOLDER = input_folder
-        self.BPNAME = bpname
         self.STEP = step
+        self.GROUP_ID = group_id
+        self.EXCEPT_BP = except_bp
+        self.EXCEOT_CASE = except_case
         self.TEST_SIZE = test_size
         self.RANDOM_SEED = random_seed
         self.SHUFFLE = shuffle
@@ -30,7 +34,6 @@ class CustomizeDataSets():
         self.TEMP_DATA = None
 
 
-
     def _walk_npz_folder(self):
         """read the name and the path of each case with return two list
 
@@ -38,13 +41,33 @@ class CustomizeDataSets():
             case_name_List [list]: 
             case_path_List [list]:
         """
-        case_name_List = os.listdir(self.INPUT_FOLDER)
-        #case_name_List.remove('_info.npz')
-        case_name_List.sort(key=lambda x:int(x.split('.')[0]))
+        files_List = os.listdir(os.path.join(self.INPUT_FOLDER,f"Step_{int(self.STEP):02}",self.GROUP_ID))
+        if self.EXCEPT_BP is not None:
+            for bp in self.EXCEPT_BP:
+                i = 0
+                for file in files_List:
+                    if file.split('_')[0] == bp:
+                        files_List.remove(file)
+                        i += 1
+                if i == 0:
+                    raise ValueError(f'No {bp} in the target folder!')
+
+        if self.EXCEOT_CASE is not None:
+            for case in self.EXCEOT_CASE:
+                j = 0
+                for file in files_List:
+                    if file.split('.')[0] == case:
+                        files_List.remove(file)
+                        j += 1
+                if j == 0:
+                    raise ValueError(f'No {case} in the target folder!')
+
+        case_name_List = files_List.copy()
+        case_name_List.sort(key=lambda x:int(x.split('_')[0][2:])) # BP028_001 ==> 028 ==> 28 
         
         case_path_List = []
         for case_name in case_name_List:
-            case_path_List.append(os.path.join(self.INPUT_FOLDER,case_name))
+            case_path_List.append(os.path.join(self.INPUT_FOLDER,f"Step_{int(self.STEP):02}",self.GROUP_ID,case_name))
 
         example_data = np.load(case_path_List[0]) # 读取第一个case的数据
         self.N_SAMPLE = example_data['learning_data'].shape[0] # 返回case中样本数量
@@ -103,14 +126,19 @@ class CustomizeDataSets():
 
         
 if __name__ == "__main__":
-    BPNAME = 'BP028'
+
+    INPUT_FOLDER = f'../TrainData'
     STEP = 1
-    INPUT_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}'
+    GROUP_ID = 'Ki1'
+    EXCEPT_BP = None
+    EXCEPT_CASE = ['BP028_001','BP028_014']
+    
     TEST_SIZE = 0.3
     SHUFFLE = True
     RANDOM_SEED=120
 
-    mydataset = CustomizeDataSets(INPUT_FOLDER,BPNAME,STEP,TEST_SIZE,SHUFFLE,RANDOM_SEED)
+    mydataset = CustomizeDataSets(INPUT_FOLDER,STEP,GROUP_ID,EXCEPT_BP,EXCEPT_CASE,
+                                    TEST_SIZE,SHUFFLE,RANDOM_SEED)
     trainsets = mydataset.select('train')
     traindataloder = Data.DataLoader(dataset=trainsets, batch_size=100, shuffle=True, num_workers = 3,
                                     pin_memory=True,drop_last=True)

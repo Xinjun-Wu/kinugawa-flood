@@ -11,13 +11,15 @@ class GenerateData():
     変換された水理解析結果NPYファイルを訓練用NPZファイルに作成する。
     作成時間間隔を指定する可能
     """
-    def __init__(self, input_folder='../NpyData/BP028', output_folder='../TrainData/BP028', 
-                timeinterval=10, n_delta=6, step=6, bpname='BP028'):
+    def __init__(self, input_folder='../NpyData', output_folder='../TrainData', 
+                group_id = 'Ki1' ,bpname='BP028',
+                timeinterval=10, n_delta=6, step=6, ):
         self.INPUT_FOLDER = input_folder
         self.OUTPUT_FOLDER = output_folder
         self.TIMEINTERVAL = timeinterval
         self.N_DELTA = n_delta
         self.STEP = step
+        self.GROUP_ID = group_id
         self.BPNAME = bpname
         self.LOCATION = None
         self.N_TIMESTEMP = 0
@@ -27,8 +29,8 @@ class GenerateData():
         self.COLUMNS = 0
         self.NPZ_COUNT = 0
         self.DEM = None
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, f'Step_{self.STEP}')):
-            os.makedirs(os.path.join(self.OUTPUT_FOLDER, f'Step_{self.STEP}'))
+        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, f'Step_{int(self.STEP):02}',f"{self.GROUP_ID}")):
+            os.makedirs(os.path.join(self.OUTPUT_FOLDER, f'Step_{int(self.STEP):02}',f"{self.GROUP_ID}"))
 
     def _walk_npy_folder(self):
         """read the name and the path of each case with return two list
@@ -37,13 +39,17 @@ class GenerateData():
             case_name_List [list]: 
             case_path_List [list]:
         """
-        case_name_List = os.listdir(self.INPUT_FOLDER)
-        case_name_List.remove('_info.npz')
-        case_name_List.sort(key=lambda x:int(x.split('.')[0]))
+        files_List = os.listdir(os.path.join(self.INPUT_FOLDER, self.GROUP_ID))
+        case_name_List = []
+        for file in files_List:
+            if file.split('_')[0] == self.BPNAME:
+                case_name_List.append(file)
+        #case_name_List.remove('_info.npz')
+        case_name_List.sort(key=lambda x:int(x.split('.')[0][-3:]))
         
         case_path_List = []
         for case_name in case_name_List:
-            case_path_List.append(os.path.join(self.INPUT_FOLDER,case_name))
+            case_path_List.append(os.path.join(self.INPUT_FOLDER, self.GROUP_ID, case_name))
 
         example_data = np.load(case_path_List[0]) # 读取第一个case的数据
         self.N_TIMESTEMP = example_data.shape[0] # 返回case中样本数量，例如72个时刻，会包含72个不同时刻的样本
@@ -92,17 +98,17 @@ class GenerateData():
         #生成学生值，教师值，和入流积分的序列
         learning_sequence, teacher_sequence, integrate_sequence = self._gengerate_sequence()
         #提取当前case的信息，比如高宽，破堤点，DEM
-        BP_info = np.load(os.path.join(self.INPUT_FOLDER,'_info.npz'),allow_pickle=True)
+        BP_info = np.load(os.path.join(self.INPUT_FOLDER,'Info',f'{self.BPNAME}_info.npz'),allow_pickle=True)
         self.LOCATION = BP_info['IJPOINTS'] # 提取破地点，二级list [[I,J],[I,J]] I为高度即行数，J为宽度即列数
         Inflow_DF = BP_info['INFLOW_DF'][0] # 提取破地点的所有case的入流情况，以DataFrame形式返回
-        #DEM = BP_info['DEM'][0] #提取当前研究区域的绝对数字高程数据，以ndarray形式返回
+        DEM = BP_info['DEM'][0] #提取当前研究区域的绝对数字高程数据，以ndarray形式返回
 
-        # #对DEM进行归一化处理，采用MinMaxScaler
-        # scaler = preprocessing.MinMaxScaler()
-        # DEM_MinMax = scaler.fit_transform(DEM)
-        # #转化为array并拓展为四阶Array,并于后面broadcast
-        # DEM_MinMax_Array = np.array(DEM_MinMax)
-        # DEM_MinMax_Array = np.tile(DEM_MinMax_Array,(self.N_TIMESTEMP-self.STEP,1,1,1))
+        #对DEM进行归一化处理，采用MinMaxScaler
+        scaler = preprocessing.MinMaxScaler()
+        DEM_MinMax = scaler.fit_transform(DEM)
+        #转化为array并拓展为四阶Array,并于后面broadcast
+        DEM_MinMax_Array = np.array(DEM_MinMax)
+        DEM_MinMax_Array = np.tile(DEM_MinMax_Array,(self.N_TIMESTEMP-self.STEP,1,1,1))
         
         N_addchannel = int(self.STEP/self.N_DELTA) # 根据计算步长 %STEP% 及分段积分步长 %N_DELTA% 计算增加的通道个数
         N_sample = self.N_TIMESTEMP-self.STEP # 根据时刻计数即总步长 %N_TIMESTEMP% 和计算步长 %STEP% 计算完整的样本个数
@@ -111,7 +117,7 @@ class GenerateData():
         integrate_sequence = integrate_sequence.reshape(N_sample, N_addchannel, self.N_DELTA+1)
         
         for case_id, (case_name, case_path) in enumerate(tqdm(zip(case_name_List,case_path_List))):
-            case_name_Str = f"case{case_name.split('.')[0]}"
+            case_name_Str = f"case{int(case_name.split('.')[0][-3:])}" # BP028_001 ==> case1
             inflow_data = Inflow_DF[case_name_Str].to_numpy() #当前case的入流数据
             watersituation = np.load(case_path) # 当前case的水流状态 numpy的shape 为(N, C, H, W)
             #提取按照时刻对应的学生值和教师值的水流状态 numpy的shape 为(N_sample, C, H, W)
@@ -150,10 +156,11 @@ class GenerateData():
             
             #在第一阶上连接学习值和入流值
             # learning_data = np.concatenate((DEM_MinMax_Array, learning_value, inint_inflow_Array),axis = 1)
-            learning_data = np.concatenate((learning_value, inint_inflow_Array),axis = 1)
+            learning_data = np.concatenate((DEM_MinMax_Array, learning_value, inint_inflow_Array),axis = 1)
             teacher_data = teacher_value
 
-            savename = os.path.join(self.OUTPUT_FOLDER, f'Step_{self.STEP}', case_name_Str[4:]+'.npz')
+            savename = os.path.join(self.OUTPUT_FOLDER, f'Step_{int(self.STEP):02}',f"{self.GROUP_ID}",
+                                    f"{self.BPNAME}_{int(case_name_Str[4:]):03}.npz")
             np.savez(savename, learning_data=learning_data, teacher_data=teacher_data)
 
         self.NPZ_COUNT = case_id +1
@@ -168,17 +175,18 @@ class GenerateData():
 if __name__ == "__main__":
 
     BPNAME_List = ['BP028']
-    BPNAME_List = ['BP032']
+    #BPNAME_List = ['BP032']
     TIMEINTERVAL = 10
     N_DELTA = 1
     STEP = 1
+    GROUP_ID = 'Ki1'
 
     for BPNAME in BPNAME_List:
-        INPUT = f'../NpyData/{BPNAME}'
-        OUTPUT = f'../TrainData/{BPNAME}'
+        INPUT = f'../NpyData'
+        OUTPUT = f'../TrainData'
 
         print(f"\n Generating {BPNAME} STEP={STEP} data.")
-        mygenerater = GenerateData(INPUT, OUTPUT, TIMEINTERVAL, N_DELTA, STEP, BPNAME)
+        mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
         mygenerater.run()
 
 

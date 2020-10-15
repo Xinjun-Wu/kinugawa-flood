@@ -17,27 +17,35 @@ import torch.nn.functional as F
 from tools import area_extract
 
 class TrainAndTest():
-    def __init__(self, model, dataset, add_data = None, input_folder='../Save/BP028/Step_1/', output_folder='../Save/BP028/Step_1/', 
+    def __init__(self, model, dataset, input_folder='../Save/Step_01/Ki1', output_folder='../Save/Step_01/Ki1', 
+                    group_id='Ki1',
                     checkpoint=None, read_version=1, save_version=1):
+        self.MODEL = model
+        self.DATASET = dataset
         self.INPUT_FOLDER = input_folder
         self.OUTPUT_FOLDER = output_folder
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'model')):
+        self.GROUP_ID = group_id
+
+        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER,'model')):
             os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'model'))
         if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'recorder')):
             os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'recorder'))
-        self.MODEL = model
-        self.DATASET = dataset
+
         if dataset is not None:
+            self.GROUP_ID = dataset.GROUP_ID
             self.STEP = dataset.STEP
-            self.BPNAME = dataset.BPNAME
-        self.ADD_DATA = add_data
-        self.n_add_channel = add_data.n_add_channel
+            
+        #self.ADD_DATA = add_data
+
+        #self.n_add_channel = add_data.n_add_channel
         self.CHECKPOINT = checkpoint
-        self.CHECKBP = None
+        self.CHECK_GROUP_ID = None
         self.CHECKSTEP = None
         self.CHECKEPOCH = None
+
         self.READ_VERSION = read_version
         self.SAVE_VERSION = save_version
+
         self.TRAIN_PARAMS_DICT = None
         self.TEST_PARAMS_DICT = None
         self.DEVICE = None        
@@ -51,20 +59,27 @@ class TrainAndTest():
 
         self.MODEL.to(self.DEVICE)
 
-    def _register_checkpoint(self):
+    def _register_checkpoint(self, recorder = True):
         #注册检查点，读取检查点信息
         CHECK_EPOCH = int(self.CHECKPOINT[-1])
         model_checkpath = os.path.join(self.INPUT_FOLDER, f"model/model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt")
         recorder_checkpath = os.path.join(self.INPUT_FOLDER, f'recorder/optim_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt')
+
         MODEL_CHECK_Dict = torch.load(model_checkpath)
-        RECORDER_CHECK_Dict = torch.load(recorder_checkpath)
-
         MODEL_Dict = MODEL_CHECK_Dict['MODEL']
-        MODEL_RECORDER_PD = MODEL_CHECK_Dict['RECORDER']
-        OPTIMIZER_Dict = RECORDER_CHECK_Dict['OPTIMIZER']
-        SCHEDULER_Dict = RECORDER_CHECK_Dict['SCHEDULER']
+        MODEL_RECORDER_DIC = MODEL_CHECK_Dict['RECORDER']
 
-        return CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_PD, OPTIMIZER_Dict, SCHEDULER_Dict
+        if recorder:
+
+            RECORDER_CHECK_Dict = torch.load(recorder_checkpath)
+            OPTIMIZER_Dict = RECORDER_CHECK_Dict['OPTIMIZER']
+            SCHEDULER_Dict = RECORDER_CHECK_Dict['SCHEDULER']
+
+        else:
+            OPTIMIZER_Dict = None
+            SCHEDULER_Dict = None
+
+        return CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_DIC, OPTIMIZER_Dict, SCHEDULER_Dict
 
 
     ############################  Train & Validation  ################################
@@ -89,14 +104,18 @@ class TrainAndTest():
 
         START_EPOCH = 0
         END_EPOCH = TRAIN_EPOCHS
-
-        RECORDER_PD = pd.DataFrame([['Epoch', 'LR', 'Train Loss', 'Validation Loss']])
-
+        
+        #创建个字典保存训练时的结果
+        RECORDER_DIC = {} 
+        for header in ['Epoch', 'LR', 'Train Loss', 'Validation Loss']:
+            RECORDER_DIC[header] = []
+       
         ########################  Checkpoint  ##################################
         if self.CHECKPOINT is not None:
-            CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_PD, OPTIMIZER_Dict, SCHEDULER_Dict = self._register_checkpoint()
+            CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_DIC, OPTIMIZER_Dict, SCHEDULER_Dict = self._register_checkpoint()
             self.MODEL.load_state_dict(MODEL_Dict)
-            RECORDER_PD = MODEL_RECORDER_PD
+            if isinstance(MODEL_RECORDER_DIC, dict):
+                RECORDER_DIC = MODEL_RECORDER_DIC
 
             START_EPOCH = CHECK_EPOCH
             if TRAIN_TRANSFER:
@@ -125,7 +144,6 @@ class TrainAndTest():
             validationdatasets = self.DATASET.select('test')
             validationloader = Data.DataLoader(dataset=validationdatasets, batch_size=TRAIN_BATCHSIZES, 
                                             shuffle=True, num_workers=TRAIN_NUM_WORKERS, pin_memory=True)
-
     
         ########################  Epoch Loop  ##########################################
         self.MODEL.train()
@@ -135,16 +153,18 @@ class TrainAndTest():
 
         for epoch in range(START_EPOCH+1, END_EPOCH+1):
             #####################  Train Batch Loop  ####################################
-            RECORDER_List = []
-            RECORDER_List.append(epoch)#记录epoch
-            RECORDER_List.append(TRAIN_OPTIMIZER.state_dict()['param_groups'][0]['lr'])#记录LR
+            # RECORDER_List = []
+            # RECORDER_List.append(epoch)#记录epoch
+            # RECORDER_List.append(TRAIN_OPTIMIZER.state_dict()['param_groups'][0]['lr'])
+            RECORDER_DIC['Epoch'].append(epoch)
+            RECORDER_DIC['LR'].append(TRAIN_OPTIMIZER.state_dict()['param_groups'][0]['lr'])#记录LR
             #####  Load Clock  ###### 
             load_start = time.time()
             for batch_id, (X_tensor, Y_tensor) in enumerate(trainloader):
 
-                #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
-                if self.ADD_DATA is not None:
-                    X_tensor = self.ADD_DATA.add_dem(X_tensor)
+                # #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
+                # if self.ADD_DATA is not None:
+                #     X_tensor = self.ADD_DATA.add_dem(X_tensor)
             
                 X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                 Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
@@ -157,15 +177,19 @@ class TrainAndTest():
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
 
                 loss = TRAIN_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
+
                 loss.backward()
                 TRAIN_OPTIMIZER.step()
+
                 ##########  Train&Load Clock  ######  
                 if TRAIN_VERBOSE == 2: 
                     load_start = train_end = time.time()
                     train_timeusage = str(timedelta(seconds=train_end) - timedelta(seconds=train_start))
-                    print(f'Name={self.BPNAME}, Step={self.STEP}, Epoch : {epoch}, Batch ID : {batch_id}, Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
 
-            RECORDER_List.append(loss.item())#记录train loss
+                    print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch : {epoch}, Batch ID : {batch_id}, \r\n Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
+
+            # RECORDER_List.append(loss.item())#记录train loss
+            RECORDER_DIC['Train Loss'].append(loss.item())
             TRAIN_SCHEDULER.step()
 
             #####################  Validation Batch Loop  #################################
@@ -177,9 +201,9 @@ class TrainAndTest():
                     load_start = time.time()
                     for batch_id, (X_tensor, Y_tensor) in enumerate(validationloader):
 
-                        #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
-                        if self.ADD_DATA is not None:
-                            X_tensor = self.ADD_DATA.add_dem(X_tensor)
+                        # #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
+                        # if self.ADD_DATA is not None:
+                        #     X_tensor = self.ADD_DATA.add_dem(X_tensor)
 
                         X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                         Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
@@ -196,14 +220,18 @@ class TrainAndTest():
                         if TRAIN_VERBOSE == 2: 
                             load_start = val_end = time.time()
                             val_timeusage = str(timedelta(seconds=val_end) - timedelta(seconds=val_start))
-                            print(f'Name={self.BPNAME}, Step={self.STEP}, Epoch : {epoch}, Batch ID : {batch_id}, Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Val timeusage : {val_timeusage}')
+                            print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch : {epoch}, Batch ID : {batch_id}, \r\n Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Val timeusage : {val_timeusage}')
 
-                RECORDER_List.append(loss.item())#记录validaion loss
+                # RECORDER_List.append(loss.item())#记录validaion loss
+                RECORDER_DIC['Validation Loss'].append(loss.item())
+        
                 self.MODEL.train()
             else:
-                RECORDER_List.append(None)
-            RECORDER_PD = RECORDER_PD.append([RECORDER_List], ignore_index=True)#将本轮epoch的记录存起来
-            print(f'Name={self.BPNAME}, Step={self.STEP}, Epoch={epoch}, LR={RECORDER_List[1]}, Train Loss={RECORDER_List[2]}, Validation Loss={RECORDER_List[3]}')
+                #RECORDER_List.append(None)
+                RECORDER_DIC['Validation Loss'].append(None)
+            # RECORDER_PD = RECORDER_PD.append([RECORDER_List], ignore_index=True)#将本轮epoch的记录存起来
+
+            print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch={epoch}, \r\n LR={RECORDER_List[1]}, Train Loss={RECORDER_List[2]}, Validation Loss={RECORDER_List[3]}')
 
             ################  Epoch Clock  #############    
             if TRAIN_VERBOSE == 1 or TRAIN_VERBOSE == 2:
@@ -220,7 +248,7 @@ class TrainAndTest():
                 ######################  Save Model  ####################################
                 model_state = {
                                 'MODEL':self.MODEL.state_dict(),
-                                'RECORDER':RECORDER_PD
+                                'RECORDER':RECORDER_DIC
                                 }
                 torch.save(model_state, os.path.join(self.OUTPUT_FOLDER, 'model', 
                                                         f'model_V{self.SAVE_VERSION}_epoch_{epoch}.pt'))
@@ -235,6 +263,7 @@ class TrainAndTest():
                 
                 ######################  Save Recorder  ####################################
             if epoch % TRAIN_RECORDER_SAVECYCLE == 0 or epoch == TRAIN_EPOCHS :
+                RECORDER_PD = pd.DataFrame(RECORDER_DIC)
                 RECORDER_PD.to_csv(os.path.join(self.OUTPUT_FOLDER, 'recorder',
                                                         f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.4f',index = False)
 
@@ -246,7 +275,7 @@ class TrainAndTest():
         self.TEST_PARAMS_DICT = test_params_Dict
         self.CHECKPOINT = checkpoint
         if self.CHECKPOINT is not None:
-            self.CHECKBP = self.CHECKPOINT[0]
+            self.CHECK_GROUP_ID = self.CHECKPOINT[0]
             self.CHECKSTEP = self.CHECKPOINT[1]
             self.CHECKEPOCH = self.CHECKPOINT[2]
 
@@ -256,7 +285,7 @@ class TrainAndTest():
         TEST_DATA_X = self.TEST_PARAMS_DICT['TEST_DATA_X']
         TEST_DATA_y = self.TEST_PARAMS_DICT['TEST_DATA_y']
         ########################################## Register Checkpoint  ####################################
-        CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_PD, OPTIMIZER_Dict, SCHEDULER_Dict = self._register_checkpoint()
+        CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_PD, OPTIMIZER_Dict, SCHEDULER_Dict = self._register_checkpoint(False)
         self.MODEL.load_state_dict(MODEL_Dict)
         TEST_recorder_Dict = {}
         TEST_recorder_Dict['EPOCH'] = [CHECK_EPOCH]
@@ -284,16 +313,18 @@ class TrainAndTest():
         self.MODEL.eval()
 
         with torch.no_grad():
+
             Y_output_tensor_gpu_list = []#保存输出的Y
             LOSS_ITEM = []# 保存每次loss
+
             for sample_id, (X_Input, Y_Input) in enumerate(zip(TEST_DATA_X,TEST_DATA_y)):
 
                 X_tensor = X_Input.unsqueeze(0)
                 Y_tensor = Y_Input.unsqueeze(0)
 
-                #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
-                if self.ADD_DATA is not None:
-                    X_tensor = self.ADD_DATA.add_dem(X_tensor)
+                # #以添加通道的方式添加其他固定不点的数据，例如DEM，或者梯度
+                # if self.ADD_DATA is not None:
+                #     X_tensor = self.ADD_DATA.add_dem(X_tensor)
 
                 X_input_tensor_gpu = X_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
                 Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
@@ -307,19 +338,19 @@ class TrainAndTest():
                 Y_output_array = Y_output_tensor_gpu.cpu()
                 Y_output_array = Y_output_array.numpy()
 
-                #利用buffered输入的范围的mask来提取输出的范围
+                # #利用buffered输入的范围的mask来提取输出的范围
 
-                if sample_id == 0: 
-                    # 初始时刻使用破堤点入流作为目标区域生成 buffered mask
-                    target_area = X_input_tensor_gpu[0,self.n_add_channel+3] 
-                else:
-                    # 后续时刻使用上一时刻的洪水水深范围作为目标区域生成buffered mask
-                    target_area = X_input_tensor_gpu[0,self.n_add_channel]
+                # if sample_id == 0: 
+                #     # 初始时刻使用破堤点入流作为目标区域生成 buffered mask
+                #     target_area = X_input_tensor_gpu[0,self.n_add_channel+3] 
+                # else:
+                #     # 后续时刻使用上一时刻的洪水水深范围作为目标区域生成buffered mask
+                #     target_area = X_input_tensor_gpu[0,self.n_add_channel]
 
         
-                for n in range(3):
-                    Y_output_array[0,n] = area_extract(target_area,
-                                                    Y_output_tensor_gpu[0,n],10,20,None,0)
+                # for n in range(3):
+                #     Y_output_array[0,n] = area_extract(target_area,
+                #                                     Y_output_tensor_gpu[0,n],10,20,None,0)
 
                 #剔除水深值小于0的值
                 Y_output_tensor_gpu = torch.tensor(Y_output_array,device = self.DEVICE)

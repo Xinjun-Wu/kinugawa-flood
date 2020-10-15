@@ -1,3 +1,4 @@
+from genericpath import exists
 import os
 import numpy as np
 import pandas as pd
@@ -18,8 +19,8 @@ class Csv2Npy():
         self.BPNAME = bpname
         self.DEM = None
 
-        if not os.path.exists(self.OUTPUT_FOLDER):
-            os.makedirs(self.OUTPUT_FOLDER)
+        # if not os.path.exists(self.OUTPUT_FOLDER):
+        #     os.makedirs(self.OUTPUT_FOLDER)
     
 
     def _get_PointLists(self,listfile=r'../氾濫流量ハイドロ/破堤点毎格子情報_ver20200515.xlsx',skiprows=0,index_col=0):
@@ -89,11 +90,15 @@ class Csv2Npy():
         Group_ID, Points_I_J = self._get_PointLists()
         Inflow_DF = self._get_Inflow()
 
-        npz_save_name = os.path.join(self.OUTPUT_FOLDER, '_info.npz' )
+        npz_save_path = os.path.join(self.OUTPUT_FOLDER, 'Info')
+        if not os.path.exists(npz_save_path):
+            os.makedirs(npz_save_path)
+        npz_save_name = os.path.join(npz_save_path,f'{self.BPNAME}_info.npz')
         np.savez(npz_save_name, IJCOORDINATES=ijCoordinates, XYCOORDINATES=xyCoordinates,
                 HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, GROUP_ID=Group_ID, 
                 INFLOW_DF=[Inflow_DF,0], DEM=[self.DEM, 0], allow_pickle=True)
         print(f'Have created _info.npz file for {self.BPNAME}.')
+        return Group_ID
         
 
     def _get_data(self, casefolder_path):
@@ -125,7 +130,7 @@ class Csv2Npy():
 
     def _walk_cases(self, except_list=None):
 
-        self._get_info_()
+        GROUP_ID = self._get_info_()
         casefolder_List = os.listdir(self.INPUT_FOLDER)
         if except_list is not None:
             for except_file in except_list:
@@ -135,10 +140,13 @@ class Csv2Npy():
         #遍历每个case
         for casefolder in tqdm(casefolder_List):
             casefolder_path = os.path.join(self.INPUT_FOLDER,casefolder)
-            casename_Str = casefolder.split("_")[0][4:]
+            casename_int = int(casefolder.split("_")[0][4:])
             watersituation = self._get_data(casefolder_path)
             #保存当前case的数据
-            savename = os.path.join(self.OUTPUT_FOLDER,casename_Str+'.npy')
+            savepath = os.path.join(self.OUTPUT_FOLDER,f'{GROUP_ID}')
+            if not os.path.exists(savepath):
+                os.makedirs(savepath)
+            savename = os.path.join(savepath,f'{self.BPNAME}_{casename_int:03}.npy')
             np.save(savename, watersituation)
             self.NPY_COUNT += 1
        
@@ -149,13 +157,13 @@ class Csv2Npy():
 
 if __name__ == "__main__":
     BPNAME_List = ['BP028']
-    BPNAME_List = ['BP032']
+    #BPNAME_List = ['BP032']
     except_list = None
 
     for BPNAME in BPNAME_List:
 
         INPUT = f'../CasesData/{BPNAME}'
-        OUTPUT = f'../NpyData/{BPNAME}'
+        OUTPUT = f'../NpyData'
 
         mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
         mynpy.run(except_list)
