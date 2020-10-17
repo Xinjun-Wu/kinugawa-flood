@@ -28,7 +28,7 @@ if __name__ == "__main__":
     STEP_List = [1]
 
     CHECKPOINT = None
-    CHECKPOINT = ['Ki1', 1, 2000] ###STEP == 1 , EPOCH == 590
+    #CHECKPOINT = ['Ki1', 1, 2000] ###STEP == 1 , EPOCH == 590
     CHECK_EACH_STEP = False
     CHECK_EACH_GROUP = False
     SHUFFLE = True
@@ -64,9 +64,9 @@ if __name__ == "__main__":
             OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
             DATA_FOLDER = f'../TrainData'
             # EXCEPT_BP = ['BP032']
-            # EXCEPT_CASE = ['BP028_001']
+            EXCEPT_CASE = ['BP028_006','BP028_0014','BP028_023','BP028_031']
             EXCEPT_BP = None
-            EXCEPT_CASE = None
+            # EXCEPT_CASE = None
 
             print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
             optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
             TRAIN_PARAMS_DICT = {
-                                'EPOCHS' : 8000,
+                                'EPOCHS' : 10000,
                                 'BATCHSIZES' : 128,
                                 'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,

@@ -43,3 +43,8 @@ submit 004 <optimize>
         修改文件目录的组织方式及命名方式，所有BP的case放在同一个文件夹，通过文件名进行定位；
         训练时可选择不参与训练的BP或者CASE;
         其他优化
+
+submit 005 <optimize>
+2020-10-17
+    optimize
+    Csv2Npy.py, TrainAndTest.py, TrainMethod.py 参数传递

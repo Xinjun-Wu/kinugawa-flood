@@ -157,7 +157,9 @@ class TrainAndTest():
             # RECORDER_List.append(epoch)#记录epoch
             # RECORDER_List.append(TRAIN_OPTIMIZER.state_dict()['param_groups'][0]['lr'])
             RECORDER_DIC['Epoch'].append(epoch)
-            RECORDER_DIC['LR'].append(TRAIN_OPTIMIZER.state_dict()['param_groups'][0]['lr'])#记录LR
+            lr = TRAIN_OPTIMIZER.state_dict()['param_groups'][0]['lr']
+            #RECORDER_DIC['LR'].append(TRAIN_OPTIMIZER.state_dict()['param_groups'][0]['lr'])#记录LR
+            RECORDER_DIC['LR'].append(lr)
             #####  Load Clock  ###### 
             load_start = time.time()
             for batch_id, (X_tensor, Y_tensor) in enumerate(trainloader):
@@ -176,9 +178,9 @@ class TrainAndTest():
                 self.MODEL.zero_grad()
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
 
-                loss = TRAIN_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
+                train_loss = TRAIN_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
 
-                loss.backward()
+                train_loss.backward()
                 TRAIN_OPTIMIZER.step()
 
                 ##########  Train&Load Clock  ######  
@@ -186,10 +188,10 @@ class TrainAndTest():
                     load_start = train_end = time.time()
                     train_timeusage = str(timedelta(seconds=train_end) - timedelta(seconds=train_start))
 
-                    print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch : {epoch}, Batch ID : {batch_id}, \r\n Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
+                    print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch : {epoch}, Batch ID : {batch_id}, \r\n train_Loss ：{train_loss.item()}, Load timeusage : {load_timeusage}, Train timeusage : {train_timeusage}')
 
             # RECORDER_List.append(loss.item())#记录train loss
-            RECORDER_DIC['Train Loss'].append(loss.item())
+            RECORDER_DIC['Train Loss'].append(train_loss.item())
             TRAIN_SCHEDULER.step()
 
             #####################  Validation Batch Loop  #################################
@@ -215,15 +217,15 @@ class TrainAndTest():
                         self.MODEL.zero_grad()
                         Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
 
-                        loss = TRAIN_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
+                        val_loss = TRAIN_LOSS_FN(Y_output_tensor_gpu,Y_input_tensor_gpu)
                         ##########  Val & Load Clock  ######  
                         if TRAIN_VERBOSE == 2: 
                             load_start = val_end = time.time()
                             val_timeusage = str(timedelta(seconds=val_end) - timedelta(seconds=val_start))
-                            print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch : {epoch}, Batch ID : {batch_id}, \r\n Loss ：{loss.item()}, Load timeusage : {load_timeusage}, Val timeusage : {val_timeusage}')
+                            print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch : {epoch}, Batch ID : {batch_id}, \r\n val_Loss ：{val_loss.item()}, Load timeusage : {load_timeusage}, Val timeusage : {val_timeusage}')
 
                 # RECORDER_List.append(loss.item())#记录validaion loss
-                RECORDER_DIC['Validation Loss'].append(loss.item())
+                RECORDER_DIC['Validation Loss'].append(val_loss.item())
         
                 self.MODEL.train()
             else:
@@ -231,8 +233,8 @@ class TrainAndTest():
                 RECORDER_DIC['Validation Loss'].append(None)
             # RECORDER_PD = RECORDER_PD.append([RECORDER_List], ignore_index=True)#将本轮epoch的记录存起来
 
-            print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch={epoch}, \r\n LR={RECORDER_List[1]}, Train Loss={RECORDER_List[2]}, Validation Loss={RECORDER_List[3]}')
-
+            print(f'Group={self.GROUP_ID}, Step={int(self.STEP):02}, Epoch={epoch}, LR={lr}, Train Loss={train_loss}, Validation Loss={val_loss}')
+            
             ################  Epoch Clock  #############    
             if TRAIN_VERBOSE == 1 or TRAIN_VERBOSE == 2:
                 epoch_end = time.time()
