@@ -267,7 +267,7 @@ class TrainAndTest():
             if epoch % TRAIN_RECORDER_SAVECYCLE == 0 or epoch == TRAIN_EPOCHS :
                 RECORDER_PD = pd.DataFrame(RECORDER_DIC)
                 RECORDER_PD.to_csv(os.path.join(self.OUTPUT_FOLDER, 'recorder',
-                                                        f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.4f',index = False)
+                        f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.8f',index = False)
 
 
     def test(self, test_params_Dict, checkpoint):

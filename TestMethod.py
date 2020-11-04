@@ -56,6 +56,9 @@ if __name__ == "__main__":
                 # TEST_CASE_LIST = test_datainfo['case_index_List']
                 # testloader = Data.DataLoader(dataset=testdatasets, batch_size=TEST_BATCHSIZES, 
                 #                                     shuffle=False, num_workers=TEST_NUM_WORKERS, pin_memory=True)
+
+                #time clock start
+                start_clock = time.time()
                 #从文件读取数据
                 case_path = os.path.join(DATA_FOLDER, f"Step_{int(STEP):02}",f"{GROUP_ID}",f"{str(CASENAME)}.npz")
                 case_data = np.load(case_path)
@@ -103,7 +106,9 @@ if __name__ == "__main__":
                     if epoch % SAVE_CYCLE == 0:
                         TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
                 TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
-                print('Done!')
+                end_clock = time.time()
+                timeusage = str(timedelta(seconds=start_clock) - timedelta(seconds=end_clock))
+                print(f'Done for {CASENAME} with time usage : {timeusage} .')
 
             
 
