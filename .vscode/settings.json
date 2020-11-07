@@ -1,4 +1,5 @@
 {
-    "python.pythonPath": "C:\\Anaconda3\\envs\\pytorch\\python.exe",
-    "git.ignoreLimitWarning": true
+    "python.pythonPath": "D:\\anaconda3\\envs\\pytorch\\python.exe",
+    "git.ignoreLimitWarning": true,
+    "python.dataScience.jupyterServerURI": "local"
 }

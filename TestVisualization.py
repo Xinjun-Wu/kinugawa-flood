@@ -1,3 +1,4 @@
+
 import numpy as np 
 import pandas as pd 
 import matplotlib.pyplot as plt
@@ -191,21 +192,22 @@ if __name__ == '__main__':
     # EPOCH = int(args.EPOCH)
     # CASE = args.CASE
 
-    BPNAME='BP028'
+    GROUP_ID = 'Ki1'
 
-    STEP = 1
+    STEP = 'Step_01'
     VERSION = 1
-    EPOCH = 8000
-    CASE = '1'
+    EPOCH = 10000
+    CASENAME = 'BP028_014'
 
     FIGSIZE = (5,10)
     DPI = 100
     MAX_VALUE = 5
 
-    INPUT_FOLDER = f"../Save/{BPNAME}/Step_{STEP}/test/model_V{VERSION}_epoch_{EPOCH}/{CASE}.npz"
-    OUTPUT_FOLDER = f"../Save/{BPNAME}/Step_{STEP}/test/model_V{VERSION}_epoch_{EPOCH}/{CASE}/"
+    
+    INPUT_FOLDER = f'../Save/{STEP}/{GROUP_ID}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
+    OUTPUT_FOLDER = f'../Save/{STEP}/{GROUP_ID}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
     print('Processing...')
-    result_output(INPUT_FOLDER,OUTPUT_FOLDER,STEP,CASE,FIGSIZE,DPI,MAX_VALUE)
+    result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
     print('Done!')
 
 

@@ -75,11 +75,13 @@ class TrainAndTest():
             OPTIMIZER_Dict = RECORDER_CHECK_Dict['OPTIMIZER']
             SCHEDULER_Dict = RECORDER_CHECK_Dict['SCHEDULER']
 
+            return CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_DIC, OPTIMIZER_Dict, SCHEDULER_Dict
+
         else:
             OPTIMIZER_Dict = None
             SCHEDULER_Dict = None
 
-        return CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_DIC, OPTIMIZER_Dict, SCHEDULER_Dict
+            return CHECK_EPOCH, MODEL_Dict
 
 
     ############################  Train & Validation  ################################
@@ -287,7 +289,7 @@ class TrainAndTest():
         TEST_DATA_X = self.TEST_PARAMS_DICT['TEST_DATA_X']
         TEST_DATA_y = self.TEST_PARAMS_DICT['TEST_DATA_y']
         ########################################## Register Checkpoint  ####################################
-        CHECK_EPOCH, MODEL_Dict, MODEL_RECORDER_PD, OPTIMIZER_Dict, SCHEDULER_Dict = self._register_checkpoint(False)
+        CHECK_EPOCH, MODEL_Dict = self._register_checkpoint(False)
         self.MODEL.load_state_dict(MODEL_Dict)
         TEST_recorder_Dict = {}
         TEST_recorder_Dict['EPOCH'] = [CHECK_EPOCH]
@@ -332,7 +334,7 @@ class TrainAndTest():
                 Y_input_tensor_gpu = Y_tensor.to(self.DEVICE,dtype=torch.float32,non_blocking=True)
 
                 if len(Y_output_tensor_gpu_list ) > TEST_STEP-1 :#当保存的Y的个数大于或等于STEP时，使用预测的结果作为下一个周期的输入
-                    X_input_tensor_gpu[:,self.n_add_channel:self.n_add_channel+3,:,:] = Y_output_tensor_gpu_list[sample_id - TEST_STEP]
+                    X_input_tensor_gpu[:,1:1+3,:,:] = Y_output_tensor_gpu_list[sample_id - TEST_STEP]
 
                 self.MODEL.zero_grad()
                 Y_output_tensor_gpu = self.MODEL(X_input_tensor_gpu)
@@ -340,23 +342,29 @@ class TrainAndTest():
                 Y_output_array = Y_output_tensor_gpu.cpu()
                 Y_output_array = Y_output_array.numpy()
 
-                # #利用buffered输入的范围的mask来提取输出的范围
-
-                # if sample_id == 0: 
-                #     # 初始时刻使用破堤点入流作为目标区域生成 buffered mask
-                #     target_area = X_input_tensor_gpu[0,self.n_add_channel+3] 
-                # else:
-                #     # 后续时刻使用上一时刻的洪水水深范围作为目标区域生成buffered mask
-                #     target_area = X_input_tensor_gpu[0,self.n_add_channel]
-
-        
-                # for n in range(3):
-                #     Y_output_array[0,n] = area_extract(target_area,
-                #                                     Y_output_tensor_gpu[0,n],10,20,None,0)
-
                 #剔除水深值小于0的值
                 Y_output_tensor_gpu = torch.tensor(Y_output_array,device = self.DEVICE)
                 Y_output_tensor_gpu[:,0,:,:] = F.relu(Y_output_tensor_gpu[:,0,:,:])
+                
+                #利用buffered输入的范围的mask来提取输出的范围
+                if sample_id == 0: 
+                    # 初始时刻使用破堤点入流作为目标区域生成 buffered mask
+                    target_area = X_input_tensor_gpu[0,1+3]
+                     
+                else:
+                    # 后续时刻使用上一时刻的洪水水深范围作为目标区域生成buffered mask
+                    target_area = X_input_tensor_gpu[0,1]
+
+                # for n in range(3):
+                #     Y_output_array[0,n] = area_extract(target_area,
+                #                                     Y_output_tensor_gpu[0,n],10,25,None,0.0001)
+                #利用上一时刻的buffered范围提取现在时刻的水深范围
+                Y_output_array[0,0] = area_extract(target_area,Y_output_tensor_gpu[0,0],10,25,None,0.0001)
+                #利用本时刻的水深范围提取现在时刻的流速计算范围
+                for n in [1,2]:
+                    Y_output_array[0,n] = area_extract(Y_output_array[0,0],Y_output_tensor_gpu[0,n],0,0,None,0.0001)
+
+                Y_output_tensor_gpu = torch.tensor(Y_output_array,device = self.DEVICE)
 
                 Y_output_tensor_gpu_list.append(Y_output_tensor_gpu)
 

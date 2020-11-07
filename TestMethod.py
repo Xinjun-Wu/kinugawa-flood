@@ -1,4 +1,4 @@
-from TrainMethod import GROUP_ID
+
 import os
 import torch
 import time
@@ -15,7 +15,7 @@ from tqdm import tqdm
 from dataSet import CustomizeDataSets
 from TrainAndTest import TrainAndTest
 from Select_Net import select_net
-from tools import data_decorater
+#from tools import data_decorater
 
 if __name__ == "__main__":
     ###################### Initialize Parameters ####################################
@@ -26,13 +26,13 @@ if __name__ == "__main__":
     GROUP_ID_List = ['Ki1']
     STEP_List = [1]
 
-    START_EPOCH =7000
-    END_EPOCH = 8000
+    START_EPOCH =9990
+    END_EPOCH = 10000
     EPOCH_STEP = 10
 
     CHECKPOINT = None
     SAVE_CYCLE = 10
-    TEST_CASE_LIST = ['BP028_001','BP028_014']
+    TEST_CASE_LIST = ['BP028_006','BP028_014','BP028_023','BP028_031']
     N_DELTA = 1
 
     for GROUP_ID in GROUP_ID_List:
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             DATA_FOLDER = f'../TrainData'
 
             for CASENAME in TEST_CASE_LIST:
-                print(f'######### Testing on case {CASENAME} !#########')
+                print(f'######### Testing on case {CASENAME} #########')
                 # mydataset = CustomizeDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED, BPNAME)
                 # test_datainfo, testdatasets = mydataset.select('test')
                 # TEST_BATCHSIZES = test_datainfo['n_sample_eachcase']
@@ -107,8 +107,8 @@ if __name__ == "__main__":
                         TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
                 TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
                 end_clock = time.time()
-                timeusage = str(timedelta(seconds=start_clock) - timedelta(seconds=end_clock))
-                print(f'Done for {CASENAME} with time usage : {timeusage} .')
+                timeusage = str(timedelta(seconds=end_clock) - timedelta(seconds=start_clock))
+                print(f'Done for {CASENAME} with time usage : {timeusage} . \r\n')
 
             
 

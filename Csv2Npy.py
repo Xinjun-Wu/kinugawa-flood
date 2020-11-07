@@ -134,7 +134,8 @@ class Csv2Npy():
         casefolder_List = os.listdir(self.INPUT_FOLDER)
         if except_list is not None:
             for except_file in except_list:
-                casefolder_List.remove(except_file)
+                if except_file in casefolder_List:
+                    casefolder_List.remove(except_file)
         casefolder_List.sort(key=lambda x:int(x.split('_')[0][4:]), reverse=False)
 
         #遍历每个case

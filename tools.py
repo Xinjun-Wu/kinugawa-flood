@@ -33,7 +33,7 @@ def _mask_buffer(input_mask,height,width):
             _search_edge(input_mask,output_mask,i,j,height,width)
     return output_mask
 
-def area_extract(target_area, extract_area, buffer_height,buffer_width, equal_value, less_equal_value):
+def area_extract(target_area, extract_area, buffer_height, buffer_width, equal_value, less_equal_value):
     """ #输入为二阶array或者tensor 
         #通过目标区域的buffered mask 提取下一时刻的研究区域
         #目标区域的掩码识别值为equal_value，当值为等于mask_value时，掩码值为True.否则为False
@@ -51,7 +51,7 @@ def area_extract(target_area, extract_area, buffer_height,buffer_width, equal_va
         extract_area = extract_area.numpy()
 
     if equal_value is not None and less_equal_value is None:
-        target_masked = ma.masked_equal(target_area,equal_value)
+        target_masked = ma.masked_equal(target_area, equal_value)
     elif equal_value is None and less_equal_value is not None:
         target_masked = ma.masked_less_equal(target_area, less_equal_value)
     else:
@@ -63,6 +63,7 @@ def area_extract(target_area, extract_area, buffer_height,buffer_width, equal_va
         buffered_mask = input_mask
     else:
         buffered_mask = _mask_buffer(input_mask,buffer_height,buffer_width)
+        
     extracted_area = ma.masked_array(extract_area, buffered_mask, fill_value = 0)
     extracted_area = extracted_area.filled()
     return extracted_area
