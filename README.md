@@ -1,5 +1,45 @@
-# kinugawa-flood
-新的版本
+############################### Kinugawa-flood ##############################
+
+channel
+    *master                     <发布稳定版本，能够在九大或者东京机器上稳定运行>
+    *alpha-cooperate            <根据合作研究需求进行的开发分支>
+    *beta-academic              <根据论文要求与想法进行的开发分支>
+    *feature                    <添加新功能时先在feature分支上实现，
+                                 并测试通过后再合并到其他分支>
+    *bugfix                     <此分支为bug分支，当存在bug时，
+                                 在此分支解决后再布署到其他相对
+                                 的分支>
+
+##############################################################################
+
+submit 005 <optimize>
+2020-10-17
+    optimize
+    Csv2Npy.py, TrainAndTest.py, TrainMethod.py 参数传递
+    # kinugawa-flood
+
+submit 004 <optimize>
+2020-10-15
+    optimize 
+        修改文件目录的组织方式及命名方式，所有BP的case放在同一个文件夹，通过文件名进行定位；
+        训练时可选择不参与训练的BP或者CASE;
+        其他优化
+
+optimize
+    results_output.py 优化生成图片的排版
+     其他关联tools.py相应的更改
+
+submit 003 <add/optimize>
+2020-10-06 
+
+add 
+    tootls.py 生成掩膜时，自动将张量输入转化为numpy array
+                两种淹没生成方式，less or less_equal
+
+submit 002 <debug>
+2020-10-03 
+debug 
+    TrainAndTest.py 在test时或者将来的预测时，初始时刻使用破堤点作为目标区域生成 buffered mask, 其他时刻使用上一时刻的洪水范围
 
 submit 001 <add/debug/delete/optimize>
 2020-10-03 
@@ -19,32 +59,3 @@ delete
 
 optimize 
     细节优化
-
-
-submit 002 <debug>
-2020-10-03 
-debug 
-    TrainAndTest.py 在test时或者将来的预测时，初始时刻使用破堤点作为目标区域生成 buffered mask, 其他时刻使用上一时刻的洪水范围
-
-submit 003 <add/optimize>
-2020-10-06 
-
-add 
-    tootls.py 生成掩膜时，自动将张量输入转化为numpy array
-                两种淹没生成方式，less or less_equal
-
-optimize
-    results_output.py 优化生成图片的排版
-     其他关联tools.py相应的更改
-
-submit 004 <optimize>
-2020-10-15
-    optimize 
-        修改文件目录的组织方式及命名方式，所有BP的case放在同一个文件夹，通过文件名进行定位；
-        训练时可选择不参与训练的BP或者CASE;
-        其他优化
-
-submit 005 <optimize>
-2020-10-17
-    optimize
-    Csv2Npy.py, TrainAndTest.py, TrainMethod.py 参数传递
