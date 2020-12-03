@@ -197,7 +197,7 @@ if __name__ == '__main__':
     STEP = 'Step_01'
     VERSION = 1
     EPOCH = 10000
-    CASENAME = 'BP028_014'
+    CASENAME = 'BP028_031'
 
     FIGSIZE = (5,10)
     DPI = 100

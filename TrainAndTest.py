@@ -359,7 +359,7 @@ class TrainAndTest():
                 #     Y_output_array[0,n] = area_extract(target_area,
                 #                                     Y_output_tensor_gpu[0,n],10,25,None,0.0001)
                 #利用上一时刻的buffered范围提取现在时刻的水深范围
-                Y_output_array[0,0] = area_extract(target_area,Y_output_tensor_gpu[0,0],10,25,None,0.0001)
+                Y_output_array[0,0] = area_extract(target_area,Y_output_tensor_gpu[0,0],30,30,None,0.0001)
                 #利用本时刻的水深范围提取现在时刻的流速计算范围
                 for n in [1,2]:
                     Y_output_array[0,n] = area_extract(Y_output_array[0,0],Y_output_tensor_gpu[0,n],0,0,None,0.0001)
