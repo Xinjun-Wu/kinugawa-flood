@@ -159,7 +159,7 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
     data2csv(output_folder,predicted_data,step)
 
     n_sample = target_data.shape[0]
-    for n in range(n_sample):
+    for n in tqdm(range(n_sample)):
 
         time_index = n + step
         time_stamp = str(timedelta(seconds=time_index*600) - timedelta(seconds=0))
@@ -192,7 +192,14 @@ if __name__ == '__main__':
     # EPOCH = int(args.EPOCH)
     # CASE = args.CASE
 
+    ACADEMIC = True
+
     GROUP_ID = 'Ki1'
+    ID_item = GROUP_ID
+    #ID_item = 'BP028'
+
+    if ACADEMIC:
+        ID_item = 'Academic'
 
     STEP = 'Step_01'
     VERSION = 1
@@ -204,8 +211,8 @@ if __name__ == '__main__':
     MAX_VALUE = 5
 
     
-    INPUT_FOLDER = f'../Save/{STEP}/{GROUP_ID}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
-    OUTPUT_FOLDER = f'../Save/{STEP}/{GROUP_ID}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
+    INPUT_FOLDER = f'../Save/{STEP}/{ID_item}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
+    OUTPUT_FOLDER = f'../Save/{STEP}/{ID_item}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
     print('Processing...')
     result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
     print('Done!')

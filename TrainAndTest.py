@@ -17,7 +17,7 @@ import torch.nn.functional as F
 from tools import area_extract
 
 class TrainAndTest():
-    def __init__(self, model, dataset, input_folder='../Save/Step_01/Ki1', output_folder='../Save/Step_01/Ki1', 
+    def __init__(self, model, dataset, input_folder='../Save/Step_01/Academic', output_folder='../Save/Step_01/Academic', 
                     group_id='Ki1',
                     checkpoint=None, read_version=1, save_version=1):
         self.MODEL = model
@@ -83,6 +83,12 @@ class TrainAndTest():
 
             return CHECK_EPOCH, MODEL_Dict
 
+    def _epoch_save_cycle(self,epoch,save_cycle):
+        for e in save_cycle:
+            if epoch <= e[0]:
+                return e[1]
+            else:
+                pass
 
     ############################  Train & Validation  ################################
     def train(self,train_params_Dict):
@@ -247,7 +253,8 @@ class TrainAndTest():
                     print('\n')
 
             ###############################  Save Cycle  ####################################
-            if epoch % TRAIN_MODEL_SAVECYCLE == 0 or epoch == TRAIN_EPOCHS :
+            model_cycle = self._epoch_save_cycle(epoch,TRAIN_MODEL_SAVECYCLE)
+            if epoch % model_cycle == 0 or epoch == TRAIN_EPOCHS :
 
                 ######################  Save Model  ####################################
                 model_state = {
@@ -265,8 +272,10 @@ class TrainAndTest():
                 torch.save(other_state, os.path.join(self.OUTPUT_FOLDER, 'recorder', 
                                                             f'optim_V{self.SAVE_VERSION}_epoch_{epoch}.pt'))
                 
-                ######################  Save Recorder  ####################################
-            if epoch % TRAIN_RECORDER_SAVECYCLE == 0 or epoch == TRAIN_EPOCHS :
+            ######################  Save Recorder  ####################################
+
+            recorder_cycle = self._epoch_save_cycle(epoch,TRAIN_RECORDER_SAVECYCLE)
+            if epoch % recorder_cycle == 0 or epoch == TRAIN_EPOCHS :
                 RECORDER_PD = pd.DataFrame(RECORDER_DIC)
                 RECORDER_PD.to_csv(os.path.join(self.OUTPUT_FOLDER, 'recorder',
                         f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.8f',index = False)

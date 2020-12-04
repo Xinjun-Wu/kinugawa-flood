@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 
 class CustomizeDataSets():
     def __init__(self, input_folder='../TrainData',step = 1, group_id = 'Ki1', 
-                except_bp = ['BP032'], except_case = ['BP028_001, BP032_014'], 
+                except_bp = ['BP032'],only_bp = ['BP028'], except_case = ['BP028_001, BP032_014'], 
                 test_size=0.3, shuffle = True, random_seed=120):
         """
         数据将按照tvt_ratio的比例划分train,validdaton,test数据集
@@ -21,6 +21,7 @@ class CustomizeDataSets():
         self.STEP = step
         self.GROUP_ID = group_id
         self.EXCEPT_BP = except_bp
+        self.ONLY_BP = only_bp
         self.EXCEOT_CASE = except_case
         self.TEST_SIZE = test_size
         self.RANDOM_SEED = random_seed
@@ -42,15 +43,26 @@ class CustomizeDataSets():
             case_path_List [list]:
         """
         files_List = os.listdir(os.path.join(self.INPUT_FOLDER,f"Step_{int(self.STEP):02}",self.GROUP_ID))
-        if self.EXCEPT_BP is not None:
-            for bp in self.EXCEPT_BP:
+        if self.ONLY_BP is not None:
+            for bp in self.ONLY_BP:
                 i = 0
                 for file in files_List:
-                    if file.split('_')[0] == bp:
+                    if file.split('_')[0] != bp:
                         files_List.remove(file)
-                        i += 1
+                    else:
+                        i += 1 #count the num of ONLP_BP
                 if i == 0:
                     raise ValueError(f'No {bp} in the target folder!')
+        else:
+            if self.EXCEPT_BP is not None:
+                for bp in self.EXCEPT_BP:
+                    i = 0
+                    for file in files_List:
+                        if file.split('_')[0] == bp:
+                            files_List.remove(file)
+                            i += 1
+                    if i == 0:
+                        raise ValueError(f'No {bp} in the target folder!')
 
         if self.EXCEOT_CASE is not None:
             for case in self.EXCEOT_CASE:
@@ -131,13 +143,14 @@ if __name__ == "__main__":
     STEP = 1
     GROUP_ID = 'Ki1'
     EXCEPT_BP = None
+    ONLP_BP = ["BP028"]
     EXCEPT_CASE = ['BP028_001','BP028_014']
     
     TEST_SIZE = 0.3
     SHUFFLE = True
     RANDOM_SEED=120
 
-    mydataset = CustomizeDataSets(INPUT_FOLDER,STEP,GROUP_ID,EXCEPT_BP,EXCEPT_CASE,
+    mydataset = CustomizeDataSets(INPUT_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLP_BP, EXCEPT_CASE,
                                     TEST_SIZE,SHUFFLE,RANDOM_SEED)
     trainsets = mydataset.select('train')
     traindataloder = Data.DataLoader(dataset=trainsets, batch_size=100, shuffle=True, num_workers = 3,
