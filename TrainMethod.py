@@ -25,14 +25,17 @@ if __name__ == "__main__":
     # BPNAME_List = ['BP032']
     #STEP_List = [1,3]
     GROUP_ID_List = ['Ki1','Ki2','Ki3','Ki4','Ki5']
+    GROUP_ID_List=['Ki1']
     STEP_List = [1]
 
     CHECKPOINT = None
-    #CHECKPOINT = ['Ki1', 1, 2000] ###STEP == 1 , EPOCH == 590
+    CHECKPOINT = ['Ki1', 1, 99] ###STEP == 1 , EPOCH == 590
     CHECK_EACH_STEP = False
     CHECK_EACH_GROUP = False
     SHUFFLE = True
     N_DELTA = 1
+    
+    ACADEMIC = False
 
 
     #提取checkpoint的信息
@@ -60,17 +63,28 @@ if __name__ == "__main__":
                 CHECKPOINT[0] = GROUP_ID
                 CHECKPOINT[1] = STEP
 
-            INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-            OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-            DATA_FOLDER = f'../TrainData'
+
             # EXCEPT_BP = ['BP032']
-            EXCEPT_CASE = ['BP028_006','BP028_0014','BP028_023','BP028_031']
+            EXCEPT_CASE = ['BP028_006','BP028_014','BP028_023','BP028_031']
             EXCEPT_BP = None
+            ONLY_BP = ['BP028'] #仅仅允许设置1个BP
             # EXCEPT_CASE = None
 
-            print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
+            DATA_FOLDER = f'../TrainData'
 
-            mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
+            if ACADEMIC:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
+            elif ONLY_BP is not None:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
+                print(f'BP_ID = {ONLY_BP[0]}, STEP = {int(STEP):02}')
+            else:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+                print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
+
+            mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLY_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
             #add_dem = data_decorater(INFO_path)
             model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
@@ -81,13 +95,21 @@ if __name__ == "__main__":
             optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
             TRAIN_PARAMS_DICT = {
-                                'EPOCHS' : 10000,
-                                'BATCHSIZES' : 128,
+                                'EPOCHS' : 100,
+                                'BATCHSIZES' : 32,
                                 'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,
                                 'SCHEDULER' : scheduler,
-                                'MODEL_SAVECYCLE' : 10,
-                                'RECORDER_SAVECYCLE' : 100,
+                                'MODEL_SAVECYCLE' : [[20,10], #前2000 epoch 每过500个epoch保存一下
+                                                     [40,5], #前2000-4000 epoch 每过250个epoch保存一下
+                                                     [60,2],
+                                                     [80, 2],
+                                                     [100,1]],
+                                'RECORDER_SAVECYCLE' :[[20,10], #前2000 epoch 每过500个epoch保存一下
+                                                     [40,5], #前2000-4000 epoch 每过250个epoch保存一下
+                                                     [60,2],
+                                                     [80, 1],
+                                                     [100,1]],
                                 'NUM_WORKERS' : 3,
                                 'VALIDATION' : True,
                                 'VERBOSE' : 1,

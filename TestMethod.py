@@ -24,28 +24,37 @@ if __name__ == "__main__":
     TEST_NUM_WORKERS = 0
     # GROUP_ID_List = ['Ki1','Ki2','Ki3','Ki4','Ki5']
     GROUP_ID_List = ['Ki1']
+    BP_ID_List = ['BP028']
     STEP_List = [1]
 
-    START_EPOCH =9990
-    END_EPOCH = 10000
-    EPOCH_STEP = 10
+    START_EPOCH =80
+    END_EPOCH = 100
+    EPOCH_STEP = 1
 
     CHECKPOINT = None
     SAVE_CYCLE = 10
     TEST_CASE_LIST = ['BP028_006','BP028_014','BP028_023','BP028_031']
     N_DELTA = 1
 
-    for GROUP_ID in GROUP_ID_List:
+    ACADEMIC = False
 
-        # #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
-        # INFO_path = f'../NpyData/{BPNAME}/_info.npz'
-        # INFO_file = np.load(INFO_path)
-        # GROUP_ID = INFO_file['GROUP_ID']
+    if BP_ID_List is not None:
+        ITERATE_ID = BP_ID_List
+    else:
+        ITERATE_ID = GROUP_ID_List
+    
+    for ID_item in ITERATE_ID:
 
         for STEP in STEP_List:
 
-            INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-            OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+            if ACADEMIC:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
+
+            else:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ID_item}'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ID_item}'
+
             DATA_FOLDER = f'../TrainData'
 
             for CASENAME in TEST_CASE_LIST:
@@ -58,6 +67,11 @@ if __name__ == "__main__":
                 #                                     shuffle=False, num_workers=TEST_NUM_WORKERS, pin_memory=True)
 
                 #time clock start
+                #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
+                INFO_path = f'../NpyData/Info/{CASENAME[:5]}_info.npz'
+                INFO_file = np.load(INFO_path)
+                GROUP_ID = INFO_file['GROUP_ID']
+
                 start_clock = time.time()
                 #从文件读取数据
                 case_path = os.path.join(DATA_FOLDER, f"Step_{int(STEP):02}",f"{GROUP_ID}",f"{str(CASENAME)}.npz")
@@ -96,16 +110,16 @@ if __name__ == "__main__":
                 #     TEST_LOSS = pd.DataFrame()
                 TEST_LOSS = pd.DataFrame()
 
-                for epoch in range(START_EPOCH, END_EPOCH, EPOCH_STEP):
+                for epoch in tqdm(range(START_EPOCH, END_EPOCH, EPOCH_STEP)):
                     epoch += EPOCH_STEP
 
-                    CHECKPOINT = [GROUP_ID, STEP, epoch]
+                    CHECKPOINT = [ID_item, STEP, epoch]
                     TEST_recorder_Dict = MyTrainAndTest.test(TEST_PARAMS_DICT, CHECKPOINT)
                     TEST_LOSS = TEST_LOSS.append(pd.DataFrame(TEST_recorder_Dict), ignore_index=True)
 
                     if epoch % SAVE_CYCLE == 0:
-                        TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
-                TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.4f',index = False)
+                        TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.8f',index = False)
+                TEST_LOSS.to_csv(TEST_LOSS_path, float_format='%.8f',index = False)
                 end_clock = time.time()
                 timeusage = str(timedelta(seconds=end_clock) - timedelta(seconds=start_clock))
                 print(f'Done for {CASENAME} with time usage : {timeusage} . \r\n')
