@@ -192,17 +192,18 @@ if __name__ == '__main__':
     # EPOCH = int(args.EPOCH)
     # CASE = args.CASE
 
-    ACADEMIC = True
+    ACADEMIC = False
 
     GROUP_ID = 'Ki1'
-    ID_item = GROUP_ID
+    #ID_item = GROUP_ID
+    ID_item = 'BP028'
 
     if ACADEMIC:
         ID_item = 'Academic'
 
     STEP = 'Step_01'
     VERSION = 1
-    EPOCH = 10000
+    EPOCH = 100
     CASENAME = 'BP028_031'
 
     FIGSIZE = (5,10)

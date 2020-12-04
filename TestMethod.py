@@ -1,5 +1,4 @@
 
-from TrainMethod import ACADEMIC
 import os
 import torch
 import time
@@ -28,16 +27,16 @@ if __name__ == "__main__":
     BP_ID_List = ['BP028']
     STEP_List = [1]
 
-    START_EPOCH =8000
-    END_EPOCH = 10000
-    EPOCH_STEP = 10
+    START_EPOCH =80
+    END_EPOCH = 100
+    EPOCH_STEP = 1
 
     CHECKPOINT = None
     SAVE_CYCLE = 10
     TEST_CASE_LIST = ['BP028_006','BP028_014','BP028_023','BP028_031']
     N_DELTA = 1
 
-    ACADEMIC = True
+    ACADEMIC = False
 
     if BP_ID_List is not None:
         ITERATE_ID = BP_ID_List
@@ -69,7 +68,7 @@ if __name__ == "__main__":
 
                 #time clock start
                 #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
-                INFO_path = f'../NpyData/{CASENAME}/_info.npz'
+                INFO_path = f'../NpyData/Info/{CASENAME[:5]}_info.npz'
                 INFO_file = np.load(INFO_path)
                 GROUP_ID = INFO_file['GROUP_ID']
 
@@ -111,7 +110,7 @@ if __name__ == "__main__":
                 #     TEST_LOSS = pd.DataFrame()
                 TEST_LOSS = pd.DataFrame()
 
-                for epoch in range(START_EPOCH, END_EPOCH, EPOCH_STEP):
+                for epoch in tqdm(range(START_EPOCH, END_EPOCH, EPOCH_STEP)):
                     epoch += EPOCH_STEP
 
                     CHECKPOINT = [ID_item, STEP, epoch]

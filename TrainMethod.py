@@ -25,16 +25,17 @@ if __name__ == "__main__":
     # BPNAME_List = ['BP032']
     #STEP_List = [1,3]
     GROUP_ID_List = ['Ki1','Ki2','Ki3','Ki4','Ki5']
+    GROUP_ID_List=['Ki1']
     STEP_List = [1]
 
     CHECKPOINT = None
-    #CHECKPOINT = ['Ki1', 1, 2000] ###STEP == 1 , EPOCH == 590
+    CHECKPOINT = ['Ki1', 1, 99] ###STEP == 1 , EPOCH == 590
     CHECK_EACH_STEP = False
     CHECK_EACH_GROUP = False
     SHUFFLE = True
     N_DELTA = 1
     
-    ACADEMIC = True
+    ACADEMIC = False
 
 
     #提取checkpoint的信息
@@ -64,7 +65,7 @@ if __name__ == "__main__":
 
 
             # EXCEPT_BP = ['BP032']
-            EXCEPT_CASE = ['BP028_006','BP028_0014','BP028_023','BP028_031']
+            EXCEPT_CASE = ['BP028_006','BP028_014','BP028_023','BP028_031']
             EXCEPT_BP = None
             ONLY_BP = ['BP028'] #仅仅允许设置1个BP
             # EXCEPT_CASE = None
@@ -94,21 +95,21 @@ if __name__ == "__main__":
             optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
             TRAIN_PARAMS_DICT = {
-                                'EPOCHS' : 10000,
-                                'BATCHSIZES' : 128,
+                                'EPOCHS' : 100,
+                                'BATCHSIZES' : 32,
                                 'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,
                                 'SCHEDULER' : scheduler,
-                                'MODEL_SAVECYCLE' : [[2000,500], #前2000 epoch 每过500个epoch保存一下
-                                                     [4000,250], #前2000-4000 epoch 每过250个epoch保存一下
-                                                     [6000,100],
-                                                     [8000, 50],
-                                                     [10000,10]],
-                                'RECORDER_SAVECYCLE' :[[2000,500], #前2000 epoch 每过500个epoch保存一下
-                                                     [4000,250], #前2000-4000 epoch 每过250个epoch保存一下
-                                                     [6000,100],
-                                                     [8000, 50],
-                                                     [10000,10]],
+                                'MODEL_SAVECYCLE' : [[20,10], #前2000 epoch 每过500个epoch保存一下
+                                                     [40,5], #前2000-4000 epoch 每过250个epoch保存一下
+                                                     [60,2],
+                                                     [80, 2],
+                                                     [100,1]],
+                                'RECORDER_SAVECYCLE' :[[20,10], #前2000 epoch 每过500个epoch保存一下
+                                                     [40,5], #前2000-4000 epoch 每过250个epoch保存一下
+                                                     [60,2],
+                                                     [80, 1],
+                                                     [100,1]],
                                 'NUM_WORKERS' : 3,
                                 'VALIDATION' : True,
                                 'VERBOSE' : 1,

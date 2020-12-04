@@ -85,7 +85,7 @@ class TrainAndTest():
 
     def _epoch_save_cycle(self,epoch,save_cycle):
         for e in save_cycle:
-            if epoch < e[0]:
+            if epoch <= e[0]:
                 return e[1]
             else:
                 pass
