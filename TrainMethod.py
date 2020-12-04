@@ -33,6 +33,8 @@ if __name__ == "__main__":
     CHECK_EACH_GROUP = False
     SHUFFLE = True
     N_DELTA = 1
+    
+    ACADEMIC = True
 
 
     #提取checkpoint的信息
@@ -60,17 +62,28 @@ if __name__ == "__main__":
                 CHECKPOINT[0] = GROUP_ID
                 CHECKPOINT[1] = STEP
 
-            INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-            OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-            DATA_FOLDER = f'../TrainData'
+
             # EXCEPT_BP = ['BP032']
             EXCEPT_CASE = ['BP028_006','BP028_0014','BP028_023','BP028_031']
             EXCEPT_BP = None
+            ONLY_BP = ['BP028'] #仅仅允许设置1个BP
             # EXCEPT_CASE = None
 
-            print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
+            DATA_FOLDER = f'../TrainData'
 
-            mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
+            if ACADEMIC:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
+            elif ONLY_BP is not None:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
+                print(f'BP_ID = {ONLY_BP[0]}, STEP = {int(STEP):02}')
+            else:
+                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+                print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
+
+            mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLY_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
             #add_dem = data_decorater(INFO_path)
             model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
@@ -86,8 +99,16 @@ if __name__ == "__main__":
                                 'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,
                                 'SCHEDULER' : scheduler,
-                                'MODEL_SAVECYCLE' : 10,
-                                'RECORDER_SAVECYCLE' : 100,
+                                'MODEL_SAVECYCLE' : [[2000,500], #前2000 epoch 每过500个epoch保存一下
+                                                     [4000,250], #前2000-4000 epoch 每过250个epoch保存一下
+                                                     [6000,100],
+                                                     [8000, 50],
+                                                     [10000,10]],
+                                'RECORDER_SAVECYCLE' :[[2000,500], #前2000 epoch 每过500个epoch保存一下
+                                                     [4000,250], #前2000-4000 epoch 每过250个epoch保存一下
+                                                     [6000,100],
+                                                     [8000, 50],
+                                                     [10000,10]],
                                 'NUM_WORKERS' : 3,
                                 'VALIDATION' : True,
                                 'VERBOSE' : 1,
