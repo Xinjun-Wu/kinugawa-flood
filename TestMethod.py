@@ -27,16 +27,16 @@ if __name__ == "__main__":
     BP_ID_List = ['BP028']
     STEP_List = [1]
 
-    START_EPOCH =80
-    END_EPOCH = 100
-    EPOCH_STEP = 1
+    START_EPOCH =9990
+    END_EPOCH = 10000
+    EPOCH_STEP = 10
 
     CHECKPOINT = None
     SAVE_CYCLE = 10
     TEST_CASE_LIST = ['BP028_006','BP028_014','BP028_023','BP028_031']
     N_DELTA = 1
 
-    ACADEMIC = False
+    ACADEMIC = True
 
     if BP_ID_List is not None:
         ITERATE_ID = BP_ID_List

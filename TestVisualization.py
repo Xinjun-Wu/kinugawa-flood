@@ -159,7 +159,7 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
     data2csv(output_folder,predicted_data,step)
 
     n_sample = target_data.shape[0]
-    for n in range(n_sample):
+    for n in tqdm(range(n_sample)):
 
         time_index = n + step
         time_stamp = str(timedelta(seconds=time_index*600) - timedelta(seconds=0))
@@ -192,18 +192,18 @@ if __name__ == '__main__':
     # EPOCH = int(args.EPOCH)
     # CASE = args.CASE
 
-    ACADEMIC = False
+    ACADEMIC = True
 
     GROUP_ID = 'Ki1'
-    #ID_item = GROUP_ID
-    ID_item = 'BP028'
+    ID_item = GROUP_ID
+    #ID_item = 'BP028'
 
     if ACADEMIC:
         ID_item = 'Academic'
 
     STEP = 'Step_01'
     VERSION = 1
-    EPOCH = 100
+    EPOCH = 10000
     CASENAME = 'BP028_031'
 
     FIGSIZE = (5,10)
