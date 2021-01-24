@@ -23,7 +23,7 @@ class Csv2Npy():
         #     os.makedirs(self.OUTPUT_FOLDER)
     
 
-    def _get_PointLists(self,listfile=r'../氾濫流量ハイドロ/破堤点毎格子情報_ver20200515.xlsx',skiprows=0,index_col=0):
+    def _get_PointLists(self,listfile=r'../氾濫流量ハイドロ/破堤点格子番号.xlsx',skiprows=0,index_col=0):
         """
         获取破堤点网格番号
             
