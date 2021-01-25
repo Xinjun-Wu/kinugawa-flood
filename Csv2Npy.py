@@ -159,25 +159,25 @@ class Csv2Npy():
 if __name__ == "__main__":
     BPNAME_List = ['BP028']
     BPNAME_List = [
+            # 'BP019', 
+            'BP022',
+            'BP031',
             # 'BP016', 
             # 'BP025',
             # 'BP028',
             # 'BP037',
             # 'BP040',
-            # 'BP019', 
-            # 'BP022',
-            'BP031',
             ]
 
     except_list = [
+        # ['bp019.ipro'],
+        ['bp022.ipro'],
+        ['BP031.ipro'],
         # ['bp016.ipro'],
         # ['bp025.ipro'],
         # ['bp028.ipro'],
         # ['bp037.ipro'],
         # ['bp040.ipro'],
-        # ['bp019.ipro'],
-        # ['bp022.ipro'],
-        ['BP031.ipro'],
         ]
 
     for BPNAME,except_list_item in zip(BPNAME_List,except_list):

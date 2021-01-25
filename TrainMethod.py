@@ -64,59 +64,69 @@ if __name__ == "__main__":
             # EXCEPT_BP = ['BP032']
             EXCEPT_CASE = ['BP028_006','BP028_014','BP028_023','BP028_031']
             EXCEPT_BP = None
-            ONLY_BP = ['BP022'] #仅仅允许设置1个BP
+            ONLY_BP = [
+                ['BP019'],
+                ['BP022'],
+                # ['BP031'],
+                # ['BP016'],
+                # ['BP025'],
+                # ['BP028'],
+                # ['BP037'],
+                # ['BP040'],
+                ] #仅仅允许设置1个BP
             EXCEPT_CASE = None
 
             DATA_FOLDER = f'../Save/alpha-cooperate Branch/TrainData'
 
+            for ONLY_item in ONLY_BP:
+                
+                if ONLY_BP is not None:
+                    INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_item[0]}'
+                    OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_item[0]}'
+                    print(f'BP_ID = {ONLY_BP[0]}, STEP = {int(STEP):02}')
+                else:
+                    INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+                    OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+                    print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
 
-            if ONLY_BP is not None:
-                INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_BP[0]}'
-                OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_BP[0]}'
-                print(f'BP_ID = {ONLY_BP[0]}, STEP = {int(STEP):02}')
-            else:
-                INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
-                OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
-                print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
-
-            mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLY_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
-            #model = ConvNet_2(3+int(STEP/6))
-            #add_dem = data_decorater(INFO_path)
-            model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
-            MyTrainAndTest = TrainAndTest(model,mydataset,INPUT_FOLDER,OUTPUT_FOLDER,None,GROUP_ID,CHECKPOINT,READ_VERSION,SAVE_VERSION)
-            ############################## Train Paramters #################################
-            LR = 0.0001
-            Train_lambda = lambda epoch: 1/np.sqrt(((epoch % 500)+1.0))
-            optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
-            scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
-            TRAIN_PARAMS_DICT = {
-                                'EPOCHS' : 1000,
-                                'BATCHSIZES' : 128,
-                                'LOSS_FN' : nn.MSELoss(),
-                                'OPTIMIZER' : optimizer,
-                                'SCHEDULER' : scheduler,
-                                'MODEL_SAVECYCLE' : [
-                                                    [200,100], #前2000 epoch 每过500个epoch保存一下
-                                                    [400,50], #前2000-4000 epoch 每过250个epoch保存一下
-                                                    [1000,10],
-                                                    #[80, 2],
-                                                    #[2000,10]
-                                                     ],
-                                'RECORDER_SAVECYCLE' :[
-                                                    [200,100], #前2000 epoch 每过500个epoch保存一下
-                                                    [400,50], #前2000-4000 epoch 每过250个epoch保存一下
-                                                    #[60,2],
-                                                    [1000, 10],
-                                                    #[2000,10]
-                                                     ],
-                                'NUM_WORKERS' : 3,
-                                'VALIDATION' : True,
-                                'VERBOSE' : 1,
-                                'TRANSFER' : False,
-                                'CHECK_OPTIMIZER' : True,
-                                'CHECK_SCHEDULER' : True,
-                                }
-            MyTrainAndTest.train(TRAIN_PARAMS_DICT)
+                mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLY_item,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
+                #model = ConvNet_2(3+int(STEP/6))
+                #add_dem = data_decorater(INFO_path)
+                model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
+                MyTrainAndTest = TrainAndTest(model,mydataset,INPUT_FOLDER,OUTPUT_FOLDER,None,GROUP_ID,CHECKPOINT,READ_VERSION,SAVE_VERSION)
+                ############################## Train Paramters #################################
+                LR = 0.0001
+                Train_lambda = lambda epoch: 1/np.sqrt(((epoch % 500)+1.0))
+                optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
+                scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
+                TRAIN_PARAMS_DICT = {
+                                    'EPOCHS' : 1000,
+                                    'BATCHSIZES' : 128,
+                                    'LOSS_FN' : nn.MSELoss(),
+                                    'OPTIMIZER' : optimizer,
+                                    'SCHEDULER' : scheduler,
+                                    'MODEL_SAVECYCLE' : [
+                                                        [200,100], #前2000 epoch 每过500个epoch保存一下
+                                                        [400,50], #前2000-4000 epoch 每过250个epoch保存一下
+                                                        [1000,10],
+                                                        #[80, 2],
+                                                        #[2000,10]
+                                                        ],
+                                    'RECORDER_SAVECYCLE' :[
+                                                        [200,100], #前2000 epoch 每过500个epoch保存一下
+                                                        [400,50], #前2000-4000 epoch 每过250个epoch保存一下
+                                                        #[60,2],
+                                                        [1000, 10],
+                                                        #[2000,10]
+                                                        ],
+                                    'NUM_WORKERS' : 3,
+                                    'VALIDATION' : True,
+                                    'VERBOSE' : 1,
+                                    'TRANSFER' : False,
+                                    'CHECK_OPTIMIZER' : True,
+                                    'CHECK_SCHEDULER' : True,
+                                    }
+                MyTrainAndTest.train(TRAIN_PARAMS_DICT)
             if not CHECK_EACH_STEP:
                 CHECKPOINT = None
         if not CHECK_EACH_GROUP:
