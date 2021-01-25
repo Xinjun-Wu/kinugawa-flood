@@ -36,7 +36,6 @@ if __name__ == "__main__":
     TEST_CASE_LIST = ['BP028_006','BP028_014','BP028_023','BP028_031']
     N_DELTA = 1
 
-    ACADEMIC = False
 
     if BP_ID_List is not None:
         ITERATE_ID = BP_ID_List
@@ -47,15 +46,11 @@ if __name__ == "__main__":
 
         for STEP in STEP_List:
 
-            if ACADEMIC:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
+            INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ID_item}'
+            OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ID_item}'
+            TEST_RESULTS_FOLDER = f'../Save/alpha-cooperate Branch/TestResults/Step_{int(STEP):02}/{ID_item}'
 
-            else:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ID_item}'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ID_item}'
-
-            DATA_FOLDER = f'../TrainData'
+            DATA_FOLDER = f'../Save/alpha-cooperate Branch/TrainData'
 
             for CASENAME in TEST_CASE_LIST:
                 print(f'######### Testing on case {CASENAME} #########')
@@ -100,10 +95,10 @@ if __name__ == "__main__":
                 #                                 CHECKPOINT, READ_VERSION, SAVE_VERSION)   
                 # add_dem = data_decorater(INFO_path)
                 model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
-                MyTrainAndTest = TrainAndTest(model, None, INPUT_FOLDER, OUTPUT_FOLDER,GROUP_ID,
+                MyTrainAndTest = TrainAndTest(model, None, INPUT_FOLDER, OUTPUT_FOLDER,TEST_RESULTS_FOLDER, GROUP_ID,
                                             CHECKPOINT, READ_VERSION, SAVE_VERSION)
 
-                TEST_LOSS_path = os.path.join(OUTPUT_FOLDER, 'test', f'{CASENAME}.csv')
+                TEST_LOSS_path = os.path.join(TEST_RESULTS_FOLDER, f'{CASENAME}.csv')
                 # if os.path.exists(TEST_LOSS_path) and :
                 #     TEST_LOSS = pd.read_csv(TEST_LOSS_path, index_col=0)
                 # else:

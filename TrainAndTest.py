@@ -17,13 +17,16 @@ import torch.nn.functional as F
 from tools import area_extract
 
 class TrainAndTest():
-    def __init__(self, model, dataset, input_folder='../Save/Step_01/Academic', output_folder='../Save/Step_01/Academic', 
+    def __init__(self, model, dataset, input_folder='../Save/Step_01/Academic', 
+                    output_folder='../Save/Step_01/Academic', 
+                    test_folder = '../Save/Step_01/Academic',
                     group_id='Ki1',
                     checkpoint=None, read_version=1, save_version=1):
         self.MODEL = model
         self.DATASET = dataset
         self.INPUT_FOLDER = input_folder
         self.OUTPUT_FOLDER = output_folder
+        self.TEST_RESULTS_FOLDER = test_folder
         self.GROUP_ID = group_id
 
         if not os.path.exists(os.path.join(self.OUTPUT_FOLDER,'model')):
@@ -283,8 +286,8 @@ class TrainAndTest():
 
     def test(self, test_params_Dict, checkpoint):
 
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'test')):
-            os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'test'))
+        if not os.path.exists(self.TEST_RESULTS_FOLDER):
+            os.makedirs(self.TEST_RESULTS_FOLDER)
         self.TEST_PARAMS_DICT = test_params_Dict
         self.CHECKPOINT = checkpoint
         if self.CHECKPOINT is not None:
@@ -305,9 +308,9 @@ class TrainAndTest():
         self.MODEL.to(self.DEVICE)
         TEST_LOSS_FN.to(self.DEVICE)
         #创建test结果的保存文件夹
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'test', 
+        if not os.path.exists(os.path.join(self.TEST_RESULTS_FOLDER, 
                     f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}")):
-            os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'test', 
+            os.makedirs(os.path.join(self.TEST_RESULTS_FOLDER, 
                     f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}"))
         ########################################## Select Test Info&Data  ######################################
         # if test_info_data  is not None:
@@ -393,7 +396,7 @@ class TrainAndTest():
             Y_output_Array = np.array(list(map(lambda x:x.cpu().numpy(), Y_output_tensor_gpu_list)))
             Y_output_Array = Y_output_Array.squeeze()
 
-            savepath = os.path.join(self.OUTPUT_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{TEST_CASE_NAME}.npz')
+            savepath = os.path.join(self.TEST_RESULTS_FOLDER, f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{TEST_CASE_NAME}.npz')
             np.savez(savepath, input=Y_input_Array, output=Y_output_Array)
             #TEST_recorder_Dict[str(TEST_CASE_NAME)] = LOSS_ITEM
             #print(f'Model with [BP={self.CHECKBP}, Step={self.CHECKSTEP}, epoch={CHECK_EPOCH}] test loss in {TEST_CASE_NAME} : {average(LOSS_ITEM)}')

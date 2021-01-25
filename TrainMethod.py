@@ -34,9 +34,6 @@ if __name__ == "__main__":
     CHECK_EACH_GROUP = False
     SHUFFLE = True
     N_DELTA = 1
-    
-    ACADEMIC = False
-
 
     #提取checkpoint的信息
     if CHECKPOINT is not None:
@@ -70,25 +67,23 @@ if __name__ == "__main__":
             ONLY_BP = ['BP028'] #仅仅允许设置1个BP
             # EXCEPT_CASE = None
 
-            DATA_FOLDER = f'../TrainData'
+            DATA_FOLDER = f'../Save/alpha-cooperate Branch/TrainData'
 
-            if ACADEMIC:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
-            elif ONLY_BP is not None:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
+
+            if ONLY_BP is not None:
+                INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_BP[0]}'
+                OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_BP[0]}'
                 print(f'BP_ID = {ONLY_BP[0]}, STEP = {int(STEP):02}')
             else:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
+                INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+                OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
                 print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
 
             mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLY_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
             #add_dem = data_decorater(INFO_path)
             model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
-            MyTrainAndTest = TrainAndTest(model,mydataset,INPUT_FOLDER,OUTPUT_FOLDER,GROUP_ID,CHECKPOINT,READ_VERSION,SAVE_VERSION)
+            MyTrainAndTest = TrainAndTest(model,mydataset,INPUT_FOLDER,OUTPUT_FOLDER,None,GROUP_ID,CHECKPOINT,READ_VERSION,SAVE_VERSION)
             ############################## Train Paramters #################################
             LR = 0.0001
             Train_lambda = lambda epoch: 1/np.sqrt(((epoch % 500)+1.0))

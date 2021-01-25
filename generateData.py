@@ -182,8 +182,8 @@ if __name__ == "__main__":
     GROUP_ID = 'Ki1'
 
     for BPNAME in BPNAME_List:
-        INPUT = f'../NpyData'
-        OUTPUT = f'../TrainData'
+        INPUT = f'../Save/alpha-cooperate Branch/NpyData'
+        OUTPUT = f'../Save/alpha-cooperate Branch/TrainData'
 
         print(f"\n Generating {BPNAME} STEP={STEP} data.")
         mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )

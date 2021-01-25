@@ -23,7 +23,7 @@ class Csv2Npy():
         #     os.makedirs(self.OUTPUT_FOLDER)
     
 
-    def _get_PointLists(self,listfile=r'../氾濫流量ハイドロ/破堤点格子番号.xlsx',skiprows=0,index_col=0):
+    def _get_PointLists(self,listfile=r'破堤点格子番号.xlsx',skiprows=0,index_col=0):
         """
         获取破堤点网格番号
             
@@ -43,13 +43,13 @@ class Csv2Npy():
         points = pointlists.loc[BPname].to_numpy()[3:9] 
         Points_I_J = []
         for i in range(len(points)-1):
-            Points_I_J.append([points[i],points[-1]])
+            Points_I_J.append([int(points[i]),int(points[-1])])
         #Points_I_J = [[270,1], [271,1], [272,1, [273,1], [274,1]]
         Group_ID = pointlists.loc[BPname][0]
         return Group_ID, Points_I_J
 
 
-    def _get_Inflow(self,inflowfile=r'../氾濫流量ハイドロ/氾濫ハイドロケース_10分間隔_20200127.xlsx',
+    def _get_Inflow(self,inflowfile=r'氾濫ハイドロケース_10分間隔_20200127.xlsx',
                         header=0,sheet_name='氾濫ハイドロパターン (10分間隔)'):
         """
         获取各个工况下的入流记录
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     for BPNAME in BPNAME_List:
 
         INPUT = f'../CasesData/{BPNAME}'
-        OUTPUT = f'../NpyData'
+        OUTPUT = f'../Save/alpha-cooperate Branch/NpyData'
 
         mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
         mynpy.run(except_list)
