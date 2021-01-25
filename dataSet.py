@@ -43,10 +43,11 @@ class CustomizeDataSets():
             case_path_List [list]:
         """
         files_List = os.listdir(os.path.join(self.INPUT_FOLDER,f"Step_{int(self.STEP):02}",self.GROUP_ID))
+        files_List_bk = files_List.copy()
         if self.ONLY_BP is not None:
             for bp in self.ONLY_BP:
                 i = 0
-                for file in files_List:
+                for file in files_List_bk:
                     if file.split('_')[0] != bp:
                         files_List.remove(file)
                     else:
@@ -57,17 +58,18 @@ class CustomizeDataSets():
             if self.EXCEPT_BP is not None:
                 for bp in self.EXCEPT_BP:
                     i = 0
-                    for file in files_List:
+                    for file in files_List_bk:
                         if file.split('_')[0] == bp:
                             files_List.remove(file)
                             i += 1
                     if i == 0:
                         raise ValueError(f'No {bp} in the target folder!')
-
+        
+        files_List_bk = files_List.copy()
         if self.EXCEOT_CASE is not None:
             for case in self.EXCEOT_CASE:
                 j = 0
-                for file in files_List:
+                for file in files_List_bk:
                     if file.split('.')[0] == case:
                         files_List.remove(file)
                         j += 1
