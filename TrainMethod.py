@@ -22,10 +22,11 @@ if __name__ == "__main__":
     TEST_SPECIFIC = [10,12]
     RANDOM_SEED = 120
     BPNAME_List = ['BP028','BP033','BP043']
+    BPNAME_List = ['BP028']
     STEP_List = [6, 12, 18, 24, 30, 36]
-    #STEP_List = [6]
+    STEP_List = [6]
     CHECKPOINT = None
-    CHECKPOINT = ['BP033', 12, 590] ###STEP == 6 , EPOCH == 5
+    #CHECKPOINT = ['BP033', 12, 590] ###STEP == 6 , EPOCH == 5
     CHECK_EACH_STEP = False
     CHECK_EACH_BP = False
 
@@ -36,11 +37,14 @@ if __name__ == "__main__":
 
         STRT_STEP = CHECKPOINT[1]
         START_STEP_INDEX = STEP_List.index(STRT_STEP)
+    else:
+        START_BP_INDEX = 0
+        START_STEP_INDEX = 0
         
     #根据checkpoint重构循环队列
     for BPNAME in BPNAME_List[START_BP_INDEX:] if isinstance(BPNAME_List[START_BP_INDEX:],list) else [BPNAME_List[START_BP_INDEX:]]:
         
-        INFO_path = f'../NpyData/{BPNAME}/_info.npz'
+        INFO_path = f'../Save/Master Branch/NpyData/{BPNAME}/_info.npz'
         INFO_file = np.load(INFO_path)
         GROUP_ID = INFO_file['GROUP_ID']
 
@@ -50,9 +54,9 @@ if __name__ == "__main__":
                 CHECKPOINT[0] = BPNAME
                 CHECKPOINT[1] = STEP
 
-            INPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-            OUTPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-            Data_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}/'
+            INPUT_FOLDER = f'../Save/Master Branch/TrainResults/{BPNAME}/Step_{STEP}/'
+            OUTPUT_FOLDER = f'../Save/Master Branch/TrainResults/{BPNAME}/Step_{STEP}/'
+            Data_FOLDER = f'../Save/Master Branch/TrainData/{BPNAME}/Step_{STEP}/'
 
             print(f'BPNAME = {BPNAME}, STEP = {STEP}')
 
@@ -67,13 +71,13 @@ if __name__ == "__main__":
             optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
             TRAIN_PARAMS_DICT = {
-                                'EPOCHS' : 2000,
-                                'BATCHSIZES' : 144,
+                                'EPOCHS' : 20,
+                                'BATCHSIZES' : 36,
                                 'LOSS_FN' : nn.L1Loss(),
                                 'OPTIMIZER' : optimizer,
                                 'SCHEDULER' : scheduler,
-                                'MODEL_SAVECYCLE' : 10,
-                                'RECORDER_SAVECYCLE' : 100,
+                                'MODEL_SAVECYCLE' : 2,
+                                'RECORDER_SAVECYCLE' : 2,
                                 'NUM_WORKERS' : 3,
                                 'VALIDATION' : True,
                                 'VERBOSE' : 2,

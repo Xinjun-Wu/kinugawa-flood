@@ -16,8 +16,8 @@ from Select_Net import select_net
 
 if __name__ == "__main__":
     ###################### Initialize Parameters ####################################
-    READ_VERSION = 1
-    SAVE_VERSION = 1
+    READ_VERSION = 8
+    SAVE_VERSION = 8
     TVT_RATIO = [0.5, 0.3, 0.2]
     TEST_SPECIFIC = [10, 12]
     RANDOM_SEED = 120
@@ -25,23 +25,23 @@ if __name__ == "__main__":
     BPNAME_List = ['BP028']
     STEP_List = [6, 12, 18, 24, 30, 36]
     STEP_List = [6]
-    START_EPOCH =0
-    END_EPOCH = 1
-    EPOCH_STEP = 1
+    START_EPOCH =1990
+    END_EPOCH = 2000
+    EPOCH_STEP = 10
     CHECKPOINT = None
     SAVE_CYCLE = 10
 
     for BPNAME in BPNAME_List:
 
-        INFO_path = f'../NpyData/{BPNAME}/_info.npz'
+        INFO_path = f'../Save/Master Branch/NpyData/{BPNAME}/_info.npz'
         INFO_file = np.load(INFO_path)
         GROUP_ID = INFO_file['GROUP_ID']
 
         for STEP in STEP_List:
 
-            INPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-            OUTPUT_FOLDER = f'../Save/{BPNAME}/Step_{STEP}/'
-            Data_FOLDER = f'../TrainData/{BPNAME}/Step_{STEP}/'
+            INPUT_FOLDER = f'../Save/Master Branch/TrainResults/{BPNAME}/Step_{STEP}/'
+            OUTPUT_FOLDER = f'../Save/Master Branch/TestResults/{BPNAME}/Step_{STEP}/'
+            Data_FOLDER = f'../Save/Master Branch/TrainData/{BPNAME}/Step_{STEP}/'
 
             mydataset = CustomizeDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED, BPNAME)
             test_datainfo, testdatasets = mydataset.select('test')
@@ -63,7 +63,7 @@ if __name__ == "__main__":
             MyTrainAndTest = TrainAndTest(model, mydataset, INPUT_FOLDER, OUTPUT_FOLDER,
                                             CHECKPOINT, READ_VERSION, SAVE_VERSION)
 
-            TEST_LOSS_path = os.path.join(OUTPUT_FOLDER, 'test', f'model_V{READ_VERSION} test loss.csv')
+            TEST_LOSS_path = os.path.join(OUTPUT_FOLDER, f'modelv{READ_VERSION} test loss.csv')
             if os.path.exists(TEST_LOSS_path):
                 TEST_LOSS = pd.read_csv(TEST_LOSS_path, index_col=0)
             else:

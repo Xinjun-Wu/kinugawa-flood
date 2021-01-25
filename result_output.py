@@ -1,3 +1,4 @@
+from Csv2Npy import BPNAME
 import numpy as np 
 import pandas as pd 
 import matplotlib.pyplot as plt
@@ -130,6 +131,7 @@ if __name__ == '__main__':
     EPOCH = int(args.EPOCH)
     CASE = args.CASE
 
+    # BPNAME = 'BP028'
     # STEP = 6
     # VERSION = 1
     # EPOCH = 10
@@ -139,8 +141,8 @@ if __name__ == '__main__':
     DPI = 100
     MAX_VALUE = 5
 
-    INPUT_FOLDER = f"../Save/{BPNAME}/Step_{STEP}/test/model_V{VERSION}_epoch_{EPOCH}/{CASE}.npz"
-    OUTPUT_FOLDER = f"../Save/{BPNAME}/Step_{STEP}/test/model_V{VERSION}_epoch_{EPOCH}/{CASE}/"
+    INPUT_FOLDER = f"../Save/Master Branch/TestResults/{BPNAME}/Step_{STEP}/model_V{VERSION}_epoch_{EPOCH}/{CASE}.npz"
+    OUTPUT_FOLDER = f"../Save/Master Branch/TestResults/{BPNAME}/Step_{STEP}/model_V{VERSION}_epoch_{EPOCH}/{CASE}/"
     print('Processing...')
     result_output(INPUT_FOLDER,OUTPUT_FOLDER,STEP,CASE,FIGSIZE,DPI,MAX_VALUE)
     print('Done!')

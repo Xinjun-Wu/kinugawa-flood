@@ -10,18 +10,16 @@ import torch.optim as optim
 import torch.utils.data as Data
 from tqdm import tqdm
 
-from dataSet import CustomizeDataSets
-from CNN_models import ConvNet_2
 
 class TrainAndTest():
-    def __init__(self, model, dataset, input_folder='../Save/BP028/Step_6/', output_folder='../Save/BP028/Step_6/', 
+    def __init__(self, model, dataset, trainresults_folder='../Save/BP028/Step_6/', testresults_folder='../Save/BP028/Step_6/', 
                     checkpoint=None, read_version=1, save_version=1):
-        self.INPUT_FOLDER = input_folder
-        self.OUTPUT_FOLDER = output_folder
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'model')):
-            os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'model'))
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'recorder')):
-            os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'recorder'))
+        self.TRAIN_FOLDER = trainresults_folder
+        self.TEST_FOLDER = testresults_folder
+        if not os.path.exists(os.path.join(self.TRAIN_FOLDER, 'model')):
+            os.makedirs(os.path.join(self.TRAIN_FOLDER, 'model'))
+        if not os.path.exists(os.path.join(self.TRAIN_FOLDER, 'recorder')):
+            os.makedirs(os.path.join(self.TRAIN_FOLDER, 'recorder'))
         self.MODEL = model
         self.DATASET = dataset
         self.STEP = dataset.STEP
@@ -47,8 +45,8 @@ class TrainAndTest():
 
     def _register_checkpoint(self):
         CHECK_EPOCH = int(self.CHECKPOINT[-1])
-        model_checkpath = os.path.join(self.INPUT_FOLDER, f"model/model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt")
-        recorder_checkpath = os.path.join(self.INPUT_FOLDER, f'recorder/optim_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt')
+        model_checkpath = os.path.join(self.TRAIN_FOLDER, f"model/model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt")
+        recorder_checkpath = os.path.join(self.TRAIN_FOLDER, f'recorder/optim_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}.pt')
         MODEL_CHECK_Dict = torch.load(model_checkpath)
         RECORDER_CHECK_Dict = torch.load(recorder_checkpath)
 
@@ -207,7 +205,7 @@ class TrainAndTest():
                                 'MODEL':self.MODEL.state_dict(),
                                 'RECORDER':RECORDER_PD
                                 }
-                torch.save(model_state, os.path.join(self.OUTPUT_FOLDER, 'model', 
+                torch.save(model_state, os.path.join(self.TRAIN_FOLDER, 'model', 
                                                         f'model_V{self.SAVE_VERSION}_epoch_{epoch}.pt'))
 
                 ######################  Save Optimizer&Scheduler  ####################################
@@ -215,19 +213,19 @@ class TrainAndTest():
                                 'OPTIMIZER':TRAIN_OPTIMIZER.state_dict(),
                                 'SCHEDULER':TRAIN_SCHEDULER.state_dict()
                                 }
-                torch.save(other_state, os.path.join(self.OUTPUT_FOLDER, 'recorder', 
+                torch.save(other_state, os.path.join(self.TRAIN_FOLDER, 'recorder', 
                                                             f'optim_V{self.SAVE_VERSION}_epoch_{epoch}.pt'))
                 
                 ######################  Save Recorder  ####################################
             if epoch % TRAIN_RECORDER_SAVECYCLE == 0 or epoch == TRAIN_EPOCHS :
-                RECORDER_PD.to_csv(os.path.join(self.OUTPUT_FOLDER, 'recorder',
+                RECORDER_PD.to_csv(os.path.join(self.TRAIN_FOLDER, 'recorder',
                                                         f'recorder_V{self.SAVE_VERSION}_epoch_{epoch}.csv'),float_format='%.4f')
 
 
     def test(self, test_params_Dict, checkpoint, test_info_data=None):
 
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'test')):
-            os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'test'))
+        # if not os.path.exists(os.path.join(self.TEST_FOLDER, 'test')):
+        #     os.makedirs(os.path.join(self.TEST_FOLDER, 'test'))
         self.TEST_PARAMS_DICT = test_params_Dict
         self.CHECKPOINT = checkpoint
         if self.CHECKPOINT is not None:
@@ -245,9 +243,9 @@ class TrainAndTest():
         self.MODEL.to(self.DEVICE)
         TEST_LOSS_FN.to(self.DEVICE)
         #创建test结果的保存文件夹
-        if not os.path.exists(os.path.join(self.OUTPUT_FOLDER, 'test', 
+        if not os.path.exists(os.path.join(self.TEST_FOLDER, 
                     f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}")):
-            os.makedirs(os.path.join(self.OUTPUT_FOLDER, 'test', 
+            os.makedirs(os.path.join(self.TEST_FOLDER,
                     f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}"))
         ########################################## Select Test Info&Data  ######################################
         if test_info_data  is not None:
@@ -284,7 +282,7 @@ class TrainAndTest():
                 Y_output_tensor_cpu = Y_output_tensor_gpu.cpu()
                 Y_output_Array = Y_output_tensor_cpu.numpy()
 
-                savepath = os.path.join(self.OUTPUT_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{casename}.npz')
+                savepath = os.path.join(self.TEST_FOLDER, 'test', f"model_V{self.READ_VERSION}_epoch_{CHECK_EPOCH}", f'{casename}.npz')
                 np.savez(savepath, input=Y_input_Array, output=Y_output_Array)
                 TEST_recorder_Dict[str(casename)] = [loss.item()]
                 print(f'Model with [BP={self.CHECKBP}, Step={self.CHECKSTEP}, epoch={CHECK_EPOCH}] test loss in {casename} : {loss.item()}')

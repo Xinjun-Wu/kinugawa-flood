@@ -21,7 +21,7 @@ class Csv2Npy():
             os.makedirs(self.OUTPUT_FOLDER)
     
 
-    def _get_PointLists(self,listfile=r'../氾濫流量ハイドロ/破堤点毎格子情報_ver20200515.xlsx',skiprows=0,index_col=0):
+    def _get_PointLists(self,listfile=r'破堤点格子番号.xlsx',skiprows=0,index_col=0):
         """
         获取破堤点网格番号
             
@@ -40,13 +40,13 @@ class Csv2Npy():
         points = pointlists.loc[BPname].to_numpy()[3:-1] 
         Points_I_J = []
         for i in range(len(points)-1):
-            Points_I_J.append([points[i],points[-1]])
+            Points_I_J.append([int(points[i]),int(points[-1])])
         #Points_I_J = [[270,1], [271,1], [272,1, [273,1], [274,1]]
         Group_ID = pointlists.loc[BPname][0]
         return Group_ID, Points_I_J
 
 
-    def _get_Inflow(self,inflowfile=r'../氾濫流量ハイドロ/氾濫ハイドロケース_10分間隔_20200127.xlsx',
+    def _get_Inflow(self,inflowfile=r'氾濫ハイドロケース_10分間隔_20200127.xlsx',
                         header=0,sheet_name='氾濫ハイドロパターン (10分間隔)'):
         """
         获取各个工况下的入流纪录
@@ -86,7 +86,7 @@ class Csv2Npy():
 
         npz_save_name = os.path.join(self.OUTPUT_FOLDER, '_info.npz' )
         np.savez(npz_save_name,IJCOORDINATES=ijCoordinates,XYCOORDINATES=xyCoordinates,
-                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, Group_ID=Group_ID, INFLOW_DF=[Inflow_DF,0],allow_pickle=True)
+                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, GROUP_ID=Group_ID, INFLOW_DF=[Inflow_DF,0],allow_pickle=True)
         print(f'Have created _info.npz file for {self.BPNAME}.')
         
 
@@ -135,12 +135,12 @@ class Csv2Npy():
         print(f"Have generated {self.NPY_COUNT} .npy files")
 
 if __name__ == "__main__":
-    BPNAME_List = ['BP120']
+    BPNAME_List = ['BP028']
 
     for BPNAME in BPNAME_List:
 
         INPUT = f'../CasesData/{BPNAME}'
-        OUTPUT = f'../NpyData/{BPNAME}'
+        OUTPUT = f'../Save/Master Branch/NpyData/{BPNAME}'
 
         mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
         mynpy.run()

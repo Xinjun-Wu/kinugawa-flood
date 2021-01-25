@@ -115,14 +115,14 @@ class GenerateData():
 
 if __name__ == "__main__":
 
-    BPNAME_List = ['BP120']
+    BPNAME_List = ['BP028']
     TIMEINTERVAL = 10
     N_DELTA = 6
     STEP = 12
 
     for BPNAME in BPNAME_List:
-        INPUT = f'../NpyData/{BPNAME}'
-        OUTPUT = f'../TrainData/{BPNAME}'
+        INPUT = f'../Save/Master Branch/NpyData/{BPNAME}'
+        OUTPUT = f'../Save/Master Branch/TrainData/{BPNAME}'
 
         for h in range(6):
             STEP = 6*(h+1)
