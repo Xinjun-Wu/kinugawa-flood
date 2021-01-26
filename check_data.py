@@ -6,8 +6,8 @@ import pandas as pd
 area = ['Kinugawa','Kokaigawa']
 
 for river in area:
-
-    input_folder  = f'C:/Users/bent2/OneDrive - s.dlu.edu.cn/{river}/CasesData'
+    #E:\Wu\OneDrive - s.dlu.edu.cn\Kinugawa\CasesData
+    input_folder  = f'E:\\Wu\\OneDrive - s.dlu.edu.cn\\{river}\\CasesData'
     output_folder = f'../Files Check Results/{river}'
     
     if not os.path.exists(output_folder):
@@ -31,7 +31,8 @@ for river in area:
             except Exception as e:
                 sheetbook.loc[f'{BPNAME}','Decode Error'] = 'Unknow'
                 print(f'    Error when verify the {BPNAME} compressed file :   {e}')
-
+            
+        with py7zr.SevenZipFile(path_7z, 'r') as archive:
             #decode the case1_1
             try:
                 archive.extract(output_folder,csvfile)
