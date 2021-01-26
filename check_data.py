@@ -51,7 +51,7 @@ for river in area:
             print(f'    Error when read file  {csvfile} :   {e}')
             caption = 'Read Error'
         sheetbook.loc[f'{BPNAME}','case1_1 Velocity > 0.0'] = caption
-    sheetbook.to_csv(f'../Check {river} Results.csv')
+    sheetbook.to_csv(f'../Files Check Results/Check {river} Results.csv')
 
 print('Done')
 
