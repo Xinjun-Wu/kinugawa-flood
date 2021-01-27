@@ -93,25 +93,28 @@ def casefile_details_checker(pointsinfo,csvfile,index):
 
 if __name__ == '__main__':
 
-    CHECKER_RESULT = '../CasesData/checker results.xlsx'
+    # CHECKER_RESULT = '../CasesData/checker results.xlsx'
 
-    BPNAME_List = os.listdir('../CasesData')
-    if 'checker results.xlsx' in BPNAME_List:
-        BPNAME_List.remove('checker results.xlsx')
+    # BPNAME_List = os.listdir('../CasesData')
+    # if 'checker results.xlsx' in BPNAME_List:
+    #     BPNAME_List.remove('checker results.xlsx')
 
-    pointlists = pd.read_excel(r'破堤点格子番号.xlsx',skiprows=0,index_col=0).dropna()
+    # pointlists = pd.read_excel(r'破堤点格子番号.xlsx',skiprows=0,index_col=0).dropna()
 
-    with pd.ExcelWriter(CHECKER_RESULT) as excel_writer:
-        main_sheetbook_pd = pd.DataFrame()
+    # with pd.ExcelWriter(CHECKER_RESULT) as excel_writer:
+    #     main_sheetbook_pd = pd.DataFrame()
 
-        for BPNAME in BPNAME_List:
-            BP_PATH = os.path.join('../CasesData', BPNAME)
-            print(f'Checking for {BPNAME}')
-            main_sheetbook_pd = BPcase_checker(excel_writer,main_sheetbook_pd,pointlists,BPNAME,BP_PATH,1,31,31)
+    #     for BPNAME in BPNAME_List:
+    #         BP_PATH = os.path.join('../CasesData', BPNAME)
+    #         print(f'Checking for {BPNAME}')
+    #         main_sheetbook_pd = BPcase_checker(excel_writer,main_sheetbook_pd,pointlists,BPNAME,BP_PATH,1,31,31)
         
-        main_sheetbook_pd.to_excel(excel_writer,sheet_name='main')
+    #     main_sheetbook_pd.to_excel(excel_writer,sheet_name='main')
 
-        print('Done')
+    #     print('Done')
+    print('Please run check_all_data.py')
+
+
 
 
 
