@@ -1,4 +1,5 @@
 
+from TestVisualization import CASENAME
 import os
 import torch
 import time
@@ -24,16 +25,26 @@ if __name__ == "__main__":
     TEST_NUM_WORKERS = 0
     # GROUP_ID_List = ['Ki1','Ki2','Ki3','Ki4','Ki5']
     GROUP_ID_List = ['Ki1']
-    BP_ID_List = ['BP028']
     STEP_List = [1]
+    BP_ID_List = [
+                'BP020',
+                'BP021',
+                'BP022',
+                'BP025',
+                'BP028',
+                'BP031',
+                'BP037',
+                'BP040',
+                    ]
 
-    START_EPOCH =80
-    END_EPOCH = 100
-    EPOCH_STEP = 1
+
+    START_EPOCH =900
+    END_EPOCH = 1000
+    EPOCH_STEP = 10
 
     CHECKPOINT = None
     SAVE_CYCLE = 10
-    TEST_CASE_LIST = ['BP028_006','BP028_014','BP028_023','BP028_031']
+    TEST_CASE_LIST = ['_006','_014','_023','_031']
     N_DELTA = 1
 
 
@@ -52,7 +63,9 @@ if __name__ == "__main__":
 
             DATA_FOLDER = f'../Save/alpha-cooperate Branch/TrainData'
 
-            for CASENAME in TEST_CASE_LIST:
+            for index in TEST_CASE_LIST:
+                
+                CASENAME = ID_item+index
                 print(f'######### Testing on case {CASENAME} #########')
                 # mydataset = CustomizeDataSets(STEP, Data_FOLDER, TVT_RATIO, TEST_SPECIFIC, RANDOM_SEED, BPNAME)
                 # test_datainfo, testdatasets = mydataset.select('test')

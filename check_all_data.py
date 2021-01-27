@@ -7,7 +7,7 @@ import shutil
 
 def extract_7z(path_7z,name_7z,extract_path,verify = True, overwrite = False):
     CRCS_value = 0
-    caption = '-'
+    caption = 'OK'
 
     if verify:
         with py7zr.SevenZipFile(path_7z, 'r') as archive:
@@ -38,7 +38,7 @@ def extract_7z(path_7z,name_7z,extract_path,verify = True, overwrite = False):
 def check_bpcase(bpname,bppath,csv_rows,savepath,nums=31):
 
     caption_list = []
-    bpcase_caption = '-'
+    bpcase_caption = 'OK'
     # read and filter the name of case ,such as 'case1' or 'case01'
     dir_names = os.listdir(bppath)
 
@@ -69,7 +69,7 @@ def check_bpcase(bpname,bppath,csv_rows,savepath,nums=31):
     return caption_list
 
 def check_index_file(caption_list,sheetbook,casename,casepath,csv_rows,nums=73):
-    index_caption = '-'
+    index_caption = 'OK'
     #read and sort the name of csv file
     csv_names = os.listdir(casepath)
     csv_names.sort(key=lambda x:int(x.split('_')[1][:-4]))
@@ -96,9 +96,9 @@ def check_index_file(caption_list,sheetbook,casename,casepath,csv_rows,nums=73):
         
 def check_csv(csvpath1,csvpath2,rows,index):
 
-    read_caption = '-'
-    nums_caption = '-'
-    velocity_caption = '-'
+    read_caption = 'OK'
+    nums_caption = 'OK'
+    velocity_caption = 'OK'
 
     data = None
 
@@ -116,7 +116,7 @@ def check_csv(csvpath1,csvpath2,rows,index):
         read_caption = 'Read Error'
 
 
-    if read_caption == '-':
+    if read_caption == 'OK':
 
         print(f'Verifying the details of {csvpath1}...')
         #verify the nums of row
@@ -125,7 +125,7 @@ def check_csv(csvpath1,csvpath2,rows,index):
 
         # verify the Velocity
         # when the nums of row is equal to variable [rows] and index is equal to 1
-        if nums_caption == '-' and int(index) == 1:
+        if nums_caption == 'OK' and int(index) == 1:
 
             if max(data['Velocity (magnitude Max)']) > 0.0:
                 velocity_caption = 'Velocity Error'
@@ -166,7 +166,7 @@ def run(rivername,inputfolder,outputfolder,tempfolder,meshinfo_file=r'鐮村牑鐐规
         BPpath = os.path.join(tempfolder,nameBP)
 
         # verify the extent of extracted files if extract operation succeeded
-        if extract_caption == '-':
+        if extract_caption == 'OK':
             # extract the info of I and J
             IJ = mesh.loc[nameBP].to_numpy()[1:3]
             csv_rows = int(IJ[0])*int(IJ[1])
@@ -181,8 +181,8 @@ def run(rivername,inputfolder,outputfolder,tempfolder,meshinfo_file=r'鐮村牑鐐规
                 print(f'Remove {os.path.join(tempfolder,nameBP)}')
 
         # remove - token
-        if '-' in caption_list and len(caption_list) != 1:
-            caption_list.remove('-')
+        if 'OK' in caption_list and len(caption_list) != 1:
+            caption_list.remove('OK')
 
         ErrorInformation = ''
         for item in caption_list:

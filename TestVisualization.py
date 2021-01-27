@@ -196,25 +196,40 @@ if __name__ == '__main__':
 
     GROUP_ID = 'Ki1'
     #ID_item = GROUP_ID
-    ID_item = 'BP028'
+    ID_item_list = [
+                'BP020',
+                'BP021',
+                'BP022',
+                'BP025',
+                'BP028',
+                'BP031',
+                'BP037',
+                'BP040',
+                    ]   
 
-    if ACADEMIC:
-        ID_item = 'Academic'
+    CASEINDEX_list = ['_006','_014','_023','_031']
+
 
     STEP = 'Step_01'
     VERSION = 1
-    EPOCH = 100
-    CASENAME = 'BP028_031'
+    EPOCH = 1000
 
-    FIGSIZE = (5,10)
-    DPI = 100
-    MAX_VALUE = 5
 
+    for ID_item in ID_item_list:
+        for CASEINDEX in CASEINDEX_list:
+
+            CASENAME = ID_item+CASEINDEX
+
+            FIGSIZE = (5,10)
+            DPI = 100
+            MAX_VALUE = 5
+
+            
+            INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
+            OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
+            print(f'Processing for {CASENAME}...')
+            result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
     
-    INPUT_FOLDER = f'../Save/{STEP}/{ID_item}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
-    OUTPUT_FOLDER = f'../Save/{STEP}/{ID_item}/test/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
-    print('Processing...')
-    result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
     print('Done!')
 
 
