@@ -1,5 +1,5 @@
 
-from TestVisualization import CASENAME
+
 import os
 import torch
 import time
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     STEP_List = [1]
     BP_ID_List = [
                 'BP020',
-                'BP021',
+                'BP032',
                 'BP022',
                 'BP025',
                 'BP028',
@@ -38,8 +38,8 @@ if __name__ == "__main__":
                     ]
 
 
-    START_EPOCH =900
-    END_EPOCH = 1000
+    START_EPOCH =10990
+    END_EPOCH = 11000
     EPOCH_STEP = 10
 
     CHECKPOINT = None
@@ -76,7 +76,7 @@ if __name__ == "__main__":
 
                 #time clock start
                 #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
-                INFO_path = f'../NpyData/Info/{CASENAME[:5]}_info.npz'
+                INFO_path = f'../Save/alpha-cooperate Branch/NpyData/Info/{CASENAME[:5]}_info.npz'
                 INFO_file = np.load(INFO_path)
                 GROUP_ID = INFO_file['GROUP_ID']
 

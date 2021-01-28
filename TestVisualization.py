@@ -198,7 +198,7 @@ if __name__ == '__main__':
     #ID_item = GROUP_ID
     ID_item_list = [
                 'BP020',
-                'BP021',
+                'BP032',
                 'BP022',
                 'BP025',
                 'BP028',
@@ -212,7 +212,7 @@ if __name__ == '__main__':
 
     STEP = 'Step_01'
     VERSION = 1
-    EPOCH = 1000
+    EPOCH = 11000
 
 
     for ID_item in ID_item_list:

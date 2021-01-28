@@ -178,13 +178,13 @@ if __name__ == "__main__":
     #BPNAME_List = ['BP032']
     BPNAME_List = [
             'BP020', 
-            # 'BP022',
-            # 'BP031',
-            'BP021', 
-            # 'BP025',
-            # 'BP028',
-            # 'BP037',
-            # 'BP040',
+            'BP022',
+            'BP031',
+            'BP032', 
+            'BP025',
+            'BP028',
+            'BP037',
+            'BP040',
             ]
     TIMEINTERVAL = 10
     N_DELTA = 1
