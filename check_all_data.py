@@ -119,9 +119,13 @@ def check_csv(csvpath1,csvpath2,rows,index):
     if read_caption == 'OK':
 
         print(f'Verifying the details of {csvpath1}...')
-        #verify the nums of row
-        if len(data['I']) != int(rows):
-            nums_caption = 'Rows Error'
+
+        if rows is not None:
+            #verify the nums of row
+            if len(data['I']) != int(rows):
+                nums_caption = 'Rows Error'
+        else:
+            nums_caption = 'No BP Info'
 
         # verify the Velocity
         # when the nums of row is equal to variable [rows] and index is equal to 1
@@ -167,9 +171,13 @@ def run(rivername,inputfolder,outputfolder,tempfolder,meshinfo_file=r'破堤点�
 
         # verify the extent of extracted files if extract operation succeeded
         if extract_caption == 'OK':
-            # extract the info of I and J
-            IJ = mesh.loc[nameBP].to_numpy()[1:3]
-            csv_rows = int(IJ[0])*int(IJ[1])
+            try:
+                # extract the info of I and J
+                IJ = mesh.loc[nameBP].to_numpy()[1:3]
+                csv_rows = int(IJ[0])*int(IJ[1])
+            except Exception as e:
+                print (f'No {nameBP} information in 破堤点格子番号.xlsx')
+                csv_rows = None
             # check the details of BP
             caption_list = check_bpcase(nameBP,BPpath,csv_rows,outputfolder,31)
             caption_list.append(extract_caption)
@@ -197,11 +205,17 @@ if __name__ == "__main__":
     river_list = ['Kinugawa','Kokaigawa']
 
     for river in river_list:
-        input_path = f'F:\\Projects\\Flood\Kinugawa\\01_Raw_Data\\{river}' 
-        output_path =  'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\Files Check Results'      
-        temp_path = 'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\CasesData'
+        # # the paths of XINJUN-PC
+        # input_path = f'F:\\Projects\\Flood\Kinugawa\\01_Raw_Data\\{river}' 
+        # output_path =  'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\Files Check Results'      
+        # temp_path = 'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\CasesData'
 
-        run(river,input_path,output_path,temp_path,)
+        # the path on dl-box
+        input_path = f'F:\\氾濫予測AI\\01_収集資料\\{river}\\CasesData' 
+        output_path =  '../Files Check Results'      
+        temp_path = '../CasesData'
+
+        run(river,input_path,output_path,temp_path,r'破堤点格子番号.xlsx',True,True,True)
     print('Done!')
 
 
