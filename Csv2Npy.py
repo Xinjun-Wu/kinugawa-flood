@@ -67,6 +67,8 @@ class Csv2Npy():
 
 
     def _get_info_(self):
+        ijCoordinates = ''
+        xyCoordinates = ''
         csvfile=self.INPUT_FOLDER+ os.sep + "case01/case01_1.csv"
         if not os.path.exists(csvfile):
             csvfile=self.INPUT_FOLDER+ os.sep + "case1/case1_1.csv"
@@ -157,6 +159,12 @@ class Csv2Npy():
         print(f"Have generated {self.NPY_COUNT} .npy files")
 
 if __name__ == "__main__":
+    # BRANCH = 'Master Branch'
+    # BRANCH = 'alpha-academic Branch'
+    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'beta-dev Branch'
+
+
     BPNAME_List = ['BP028']
     BPNAME_List = [
             'BP020', 
@@ -183,7 +191,7 @@ if __name__ == "__main__":
     for BPNAME,except_list_item in zip(BPNAME_List,except_list):
 
         INPUT = f'../CasesData/{BPNAME}'
-        OUTPUT = f'../Save/alpha-cooperate Branch/NpyData'
+        OUTPUT = f'../Save/{BRANCH}/NpyData'
 
         mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
         mynpy.run(except_list_item)

@@ -163,7 +163,7 @@ class GenerateData():
                                     f"{self.BPNAME}_{int(case_name_Str[4:]):03}.npz")
             np.savez(savename, learning_data=learning_data, teacher_data=teacher_data)
 
-        self.NPZ_COUNT = case_id +1
+        self.NPZ_COUNT = len(case_name_List) +1
 
 
     def run(self):
@@ -173,6 +173,10 @@ class GenerateData():
 
 
 if __name__ == "__main__":
+    # BRANCH = 'Master Branch'
+    # BRANCH = 'alpha-academic Branch'
+    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'beta-dev Branch'
 
     #BPNAME_List = ['BP028']
     #BPNAME_List = ['BP032']
@@ -192,8 +196,8 @@ if __name__ == "__main__":
     GROUP_ID = 'Ki1'
 
     for BPNAME in BPNAME_List:
-        INPUT = f'../Save/alpha-cooperate Branch/NpyData'
-        OUTPUT = f'../Save/alpha-cooperate Branch/TrainData'
+        INPUT = f'../Save/{BRANCH}/NpyData'
+        OUTPUT = f'../Save/{BRANCH}/TrainData'
 
         print(f"\n Generating {BPNAME} STEP={STEP} data.")
         mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )

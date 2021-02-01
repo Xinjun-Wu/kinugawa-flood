@@ -1,6 +1,7 @@
 import os
 
 def select_net(group_id,channel_n):
+    model = ''
     group_List = ['Ki1', 'Ki2', 'Ki3', 'Ki4', 'Ki5']
     if group_id == group_List[0]:
         from Net_List.Ki1_510_53 import ConvNet_2

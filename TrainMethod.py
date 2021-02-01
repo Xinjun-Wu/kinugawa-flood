@@ -17,6 +17,12 @@ from tools import data_decorater
 
 if __name__ == "__main__":
         ###################### Initialize Parameters ####################################
+
+    # BRANCH = 'Master Branch'
+    # BRANCH = 'alpha-academic Branch'
+    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'beta-dev Branch'
+
     READ_VERSION = 1
     SAVE_VERSION = 1
     TEST_SIZE = 0.3
@@ -77,7 +83,7 @@ if __name__ == "__main__":
             ONLY_BP =None
             EXCEPT_CASE = None
 
-            DATA_FOLDER = f'../Save/alpha-cooperate Branch/TrainData'
+            DATA_FOLDER = f'../Save/{BRANCH}/TrainData'
 
             # for ONLY_item in ONLY_BP:
                 
@@ -89,8 +95,8 @@ if __name__ == "__main__":
             #         INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
             #         OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
             #         print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
-            INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
-            OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+            INPUT_FOLDER = f'../Save/{BRANCH}/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+            OUTPUT_FOLDER = f'../Save/{BRANCH}/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
             print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
 
             mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLY_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)

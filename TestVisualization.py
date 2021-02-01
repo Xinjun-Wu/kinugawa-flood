@@ -176,6 +176,10 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
 
 if __name__ == '__main__':
 
+    # BRANCH = 'Master Branch'
+    # BRANCH = 'alpha-academic Branch'
+    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'beta-dev Branch'
 
     # parser = argparse.ArgumentParser()
     # parser.add_argument('BPNAME')
@@ -225,8 +229,8 @@ if __name__ == '__main__':
             MAX_VALUE = 5
 
             
-            INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
-            OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
+            INPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
+            OUTPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
             print(f'Processing for {CASENAME}...')
             result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
     

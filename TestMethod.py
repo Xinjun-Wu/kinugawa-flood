@@ -20,6 +20,13 @@ from Select_Net import select_net
 
 if __name__ == "__main__":
     ###################### Initialize Parameters ####################################
+
+
+    # BRANCH = 'Master Branch'
+    # BRANCH = 'alpha-academic Branch'
+    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'beta-dev Branch'
+
     READ_VERSION = 1
     SAVE_VERSION = 1
     TEST_NUM_WORKERS = 0
@@ -57,8 +64,8 @@ if __name__ == "__main__":
 
         for STEP in STEP_List:
 
-            INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ID_item}'
-            OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ID_item}'
+            INPUT_FOLDER = f'../Save/{BRANCH}/TrainResults/Step_{int(STEP):02}/{ID_item}'
+            OUTPUT_FOLDER = f'../Save/{BRANCH}TrainResults/Step_{int(STEP):02}/{ID_item}'
             TEST_RESULTS_FOLDER = f'../Save/alpha-cooperate Branch/TestResults/Step_{int(STEP):02}/{ID_item}'
 
             DATA_FOLDER = f'../Save/alpha-cooperate Branch/TrainData'
@@ -76,7 +83,7 @@ if __name__ == "__main__":
 
                 #time clock start
                 #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
-                INFO_path = f'../Save/alpha-cooperate Branch/NpyData/Info/{CASENAME[:5]}_info.npz'
+                INFO_path = f'../Save/{BRANCH}/NpyData/Info/{CASENAME[:5]}_info.npz'
                 INFO_file = np.load(INFO_path)
                 GROUP_ID = INFO_file['GROUP_ID']
 
