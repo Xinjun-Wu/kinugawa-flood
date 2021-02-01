@@ -36,7 +36,7 @@ def extract_7z(path_7z,name_7z,extract_path,verify = True, overwrite = False):
                             caption = 'Extract Error'
     return caption
 
-def check_bpcase(mainsheetbook,bpname,bppath,csv_rows,savepath,nums=31):
+def check_bpcase(mainsheetbook,bpname,bppath,csv_rows,savepath,nums=31,csv_overwrite=False):
 
     bpcase_caption = 'OK'
     # read and filter the name of case ,such as 'case1' or 'case01'
@@ -62,12 +62,22 @@ def check_bpcase(mainsheetbook,bpname,bppath,csv_rows,savepath,nums=31):
     # walk the list of [case1, case2, case3 ...]
     # check the details of case folder via using check_index_file function
     for index, casename,casepath in zip(caseindex, dir_names_filtered,casepath_list):
-        # walk the list of [case1_1.csv, case1_2.csv, case1_3.csv ...]
-        sheetbook,caption_list= check_index_file(sheetbook,casename,casepath,csv_rows,73)
-        caption_str = ''
-        for s in caption_list:
-            caption_str = caption_str.join(f'{s}; ')
-        mainsheetbook.loc[bpname,f'case {index}'] = caption_str
+
+        value=''
+        try:
+            value = mainsheetbook.loc[bpname,f'case {index}']
+        except Exception as e:
+            pass
+
+        if value == 'OK; ' and not csv_overwrite:
+            print(f'Skip {bpname}: {casename}')
+        else:
+            # walk the list of [case1_1.csv, case1_2.csv, case1_3.csv ...]
+            sheetbook,caption_list= check_index_file(sheetbook,casename,casepath,csv_rows,73)
+            caption_str = ''
+            for s in caption_list:
+                caption_str = caption_str.join(f'{s}; ')
+            mainsheetbook.loc[bpname,f'case {index}'] = caption_str
 
     mainsheetbook.loc[bpname,'CaseNums'] = bpcase_caption
     sheetbook.to_csv(os.path.join(savepath,f'{bpname}.csv'))
@@ -166,7 +176,7 @@ def check_csv(csvpath1,csvpath2,rows,index):
 def run(rivername,inputfolder,outputfolder,tempfolder,
         meshinfo_file=r'破堤点格子番号.xlsx',
         zip_verify = True,
-        csv_overwrite = True,
+        csv_overwrite = False,
         extract_overwrite = False, 
         extract_remove= False):
     # check the paths
@@ -215,7 +225,7 @@ def run(rivername,inputfolder,outputfolder,tempfolder,
                 csv_rows = None
 
             # check the details of BP
-            mainsheetbook = check_bpcase(mainsheetbook,nameBP,BPpath,csv_rows,outputfolder,31)
+            mainsheetbook = check_bpcase(mainsheetbook,nameBP,BPpath,csv_rows,outputfolder,31,csv_overwrite)
             # save the mainsheetbook for current bp
             mainsheetbook.to_csv(outputfolder+f'/{rivername}.csv')
 
@@ -227,17 +237,17 @@ if __name__ == "__main__":
     river_list = ['Kinugawa','Kokaigawa']
 
     for river in river_list:
-        # # the path of XINJUN-PC
-        # input_path = f'F:\\Projects\\Flood\Kinugawa\\01_Raw_Data\\{river}' 
-        # output_path =  'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\Files Check Results'      
-        # temp_path = 'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\CasesData'
+        # the path of XINJUN-PC
+        input_path = f'F:\\Projects\\Flood\Kinugawa\\01_Raw_Data\\{river}' 
+        output_path =  'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\Files Check Results'      
+        temp_path = 'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\CasesData'
 
-        # the path on dl-box
-        input_path = f'F:\\氾濫予測AI\\01_収集資料\\{river}\\CasesData' 
-        output_path =  '../Files Check Results'      
-        temp_path = '../CasesData'
+        # # the path on dl-box
+        # input_path = f'F:\\氾濫予測AI\\01_収集資料\\{river}\\CasesData' 
+        # output_path =  '../Files Check Results'      
+        # temp_path = '../CasesData'
 
-        run(river,input_path,output_path,temp_path,r'破堤点格子番号.xlsx',True,True,True,True)
+        run(river,input_path,output_path,temp_path,r'破堤点格子番号.xlsx',True,False,False,False)
     print('Done!')
 
 
