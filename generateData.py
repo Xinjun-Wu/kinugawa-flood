@@ -116,7 +116,8 @@ class GenerateData():
 
         integrate_sequence = integrate_sequence.reshape(N_sample, N_addchannel, self.N_DELTA+1)
         
-        for case_id, (case_name, case_path) in enumerate(tqdm(zip(case_name_List,case_path_List))):
+        # for case_id, (case_name, case_path) in enumerate(tqdm(zip(case_name_List,case_path_List))):
+        for case_name, case_path in zip(case_name_List,case_path_List):
             case_name_Str = f"case{int(case_name.split('.')[0][-3:])}" # BP028_001 ==> case1
             inflow_data = Inflow_DF[case_name_Str].to_numpy() #当前case的入流数据
             watersituation = np.load(case_path) # 当前case的水流状态 numpy的shape 为(N, C, H, W)
@@ -159,37 +160,44 @@ class GenerateData():
             learning_data = np.concatenate((DEM_MinMax_Array, learning_value, inint_inflow_Array),axis = 1)
             teacher_data = teacher_value
 
+            print(f'Saving {self.BPNAME},{case_name_Str}')
+            # for i in tqdm(range(learning_data.shape[0])):
+            #     savename = os.path.join(self.OUTPUT_FOLDER, f'Step_{int(self.STEP):02}',f"{self.GROUP_ID}",
+            #                             f"{self.BPNAME}",
+            #                             f"{self.BPNAME}_{int(case_name_Str[4:]):03}_{i:03}.npz")
+            #     np.savez(savename, learning_data=learning_data[i], teacher_data=teacher_data[i])
+            #     #print(f'Saving {savename}')
             savename = os.path.join(self.OUTPUT_FOLDER, f'Step_{int(self.STEP):02}',f"{self.GROUP_ID}",
                                     f"{self.BPNAME}_{int(case_name_Str[4:]):03}.npz")
             np.savez(savename, learning_data=learning_data, teacher_data=teacher_data)
 
-        self.NPZ_COUNT = len(case_name_List) +1
+        #self.NPZ_COUNT = len(case_name_List) +1
 
 
     def run(self):
         case_name_List, case_path_List = self._walk_npy_folder()
         self._generate_data(case_name_List, case_path_List)
-        print(f"Have generated {self.NPZ_COUNT} .npz files")
+        #print(f"Have generated {self.NPZ_COUNT} .npz files")
 
 
 if __name__ == "__main__":
     # BRANCH = 'Master Branch'
-    # BRANCH = 'alpha-academic Branch'
+    # BRANCH = 'bata-academic Branch'
     BRANCH = 'alpha-cooperate Branch'
-    # BRANCH = 'beta-dev Branch'
+    # BRANCH = 'alpha-dev Branch'
 
     #BPNAME_List = ['BP028']
-    #BPNAME_List = ['BP032']
-    BPNAME_List = [
-            'BP020', 
-            'BP022',
-            'BP031',
-            'BP032', 
-            'BP025',
-            'BP028',
-            'BP037',
-            'BP040',
-            ]
+    BPNAME_List = ['BP037']
+    # BPNAME_List = [
+    #         'BP020', 
+    #         'BP022',
+    #         'BP031',
+    #         'BP032', 
+    #         'BP025',
+    #         'BP028',
+    #         'BP037',
+    #         'BP040',
+    #         ]
     TIMEINTERVAL = 10
     N_DELTA = 1
     STEP = 1
