@@ -1,3 +1,4 @@
+import re
 import os
 import numpy as np
 import pandas as pd
@@ -16,9 +17,10 @@ class Csv2Npy():
         self.COLUMNS = None
         self.WIDTH = None
         self.BPNAME = bpname
+        self.DEM = None
 
-        if not os.path.exists(self.OUTPUT_FOLDER):
-            os.makedirs(self.OUTPUT_FOLDER)
+        # if not os.path.exists(self.OUTPUT_FOLDER):
+        #     os.makedirs(self.OUTPUT_FOLDER)
     
 
     def _get_PointLists(self,listfile=r'破堤点格子番号.xlsx',skiprows=0,index_col=0):
@@ -34,10 +36,11 @@ class Csv2Npy():
             Example:
                 Points_I_J = [[270,1], [271,1], [272,1], [273,1], [274,1]]
         """
-        pointlists = pd.read_excel(listfile, skiprows=skiprows, index_col=index_col)
+        pointlists = pd.read_excel(listfile, skiprows=skiprows, index_col=index_col).dropna()
         BPname = self.BPNAME
         # return a array : array[270,271,272,273,274.1]
-        points = pointlists.loc[BPname].to_numpy()[3:-1] 
+        # points = pointlists.loc[BPname].to_numpy()[3:-1] 
+        points = pointlists.loc[BPname].to_numpy()[3:9] 
         Points_I_J = []
         for i in range(len(points)-1):
             Points_I_J.append([int(points[i]),int(points[-1])])
@@ -49,7 +52,7 @@ class Csv2Npy():
     def _get_Inflow(self,inflowfile=r'氾濫ハイドロケース_10分間隔_20200127.xlsx',
                         header=0,sheet_name='氾濫ハイドロパターン (10分間隔)'):
         """
-        获取各个工况下的入流纪录
+        获取各个工况下的入流记录
         
             Keyword Arguments:
                 inflowfile {xlsxfile}} -- [description] (default: {r'../氾濫流量ハイドロ/氾濫ハイドロケース_10分間隔_20200127.xlsx'})
@@ -64,6 +67,8 @@ class Csv2Npy():
 
 
     def _get_info_(self):
+        ijCoordinates = ''
+        xyCoordinates = ''
         csvfile=self.INPUT_FOLDER+ os.sep + "case01/case01_1.csv"
         if not os.path.exists(csvfile):
             csvfile=self.INPUT_FOLDER+ os.sep + "case1/case1_1.csv"
@@ -80,26 +85,46 @@ class Csv2Npy():
             #xyCoordinates.shape=(27030, 4) with I・J・X・Y
             ijCoordinates =dataframe[selectIJ].to_numpy()
             xyCoordinates =dataframe[selectXY].to_numpy()
+            dem = dataframe['Elevation'].to_numpy()
+            dem = dem.reshape(self.COLUMNS, self.ROWS).transpose()
+            self.DEM = dem
 
         Group_ID, Points_I_J = self._get_PointLists()
         Inflow_DF = self._get_Inflow()
 
-        npz_save_name = os.path.join(self.OUTPUT_FOLDER, '_info.npz' )
-        np.savez(npz_save_name,IJCOORDINATES=ijCoordinates,XYCOORDINATES=xyCoordinates,
-                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, GROUP_ID=Group_ID, INFLOW_DF=[Inflow_DF,0],allow_pickle=True)
+        npz_save_path = os.path.join(self.OUTPUT_FOLDER, 'Info')
+        if not os.path.exists(npz_save_path):
+            os.makedirs(npz_save_path)
+        npz_save_name = os.path.join(npz_save_path,f'{self.BPNAME}_info.npz')
+        np.savez(npz_save_name, IJCOORDINATES=ijCoordinates, XYCOORDINATES=xyCoordinates,
+                HEIGHT=self.HEIGHT, WIDTH=self.WIDTH, IJPOINTS=Points_I_J, GROUP_ID=Group_ID, 
+                INFLOW_DF=[Inflow_DF,0], DEM=[self.DEM, 0], allow_pickle=True)
         print(f'Have created _info.npz file for {self.BPNAME}.')
+        return Group_ID
         
 
     def _get_data(self, casefolder_path):
 
         index_List = os.listdir(casefolder_path)
+
+        # filter the unwanted files
+        filter1 = re.compile('^case\d{1,2}_\d{1,2}.csv$',flags=0)
+        filter2 = re.compile('^case\d{1,2}_\d{1,2}.csv$',flags=0)
+
+        index_List_filtered = [d for d in index_List if filter1.match(d) or filter2.match(d)]
+
+        index_List = index_List_filtered
+
+        # if except_list is not None:
+        #     for except_file in except_list:
+        #         index_List.remove(except_file)
         index_List.sort(key=lambda x:int(x.split('_')[1][:-4]))
         index_path_List = list(map(lambda x:os.path.join(casefolder_path,x), index_List))
 
         select=["Depth","Velocity(ms-1)X","Velocity(ms-1)Y"]
         watersituation = []
 
-        for file_path in index_path_List:
+        for file_path in index_path_List: #循环n次, 这里n为时刻记数72
             data_PD = pd.read_csv(file_path, header= 2)
 
             #channel_i.shape=(27030, 3) with 水深・フラックスx・フラックy
@@ -108,24 +133,44 @@ class Csv2Npy():
             channel_i=channel_i.reshape(self.COLUMNS,self.ROWS,3).transpose()
             #appending the data to list
             watersituation.append(channel_i)
-
+        
+        #(3,510, 53)==>(72, 3, 510, 53)
         watersituation = np.array(watersituation)
 
         return watersituation
 
     def _walk_cases(self):
 
-        self._get_info_()
+        GROUP_ID = self._get_info_()
         casefolder_List = os.listdir(self.INPUT_FOLDER)
+
+        # filter the unwanted folder
+        filter1 = re.compile('^case\d$',flags=0)
+        filter2 = re.compile('^case\d\d$',flags=0)
+
+        casefolder_List_filted = [d for d in casefolder_List if filter1.match(d) or filter2.match(d)]
+
+        casefolder_List = casefolder_List_filted
+
+        # path7z_List = list(map(lambda x:os.path.join(inputfolder,x), name7z_List))
+        # nameBP_List = list(map(lambda x:x.split('.')[0], name7z_List))
+
+        # if except_list is not None:
+        #     for except_file in except_list:
+        #         if except_file in casefolder_List:
+        #             casefolder_List.remove(except_file)
         casefolder_List.sort(key=lambda x:int(x.split('_')[0][4:]), reverse=False)
 
         #遍历每个case
         for casefolder in tqdm(casefolder_List):
             casefolder_path = os.path.join(self.INPUT_FOLDER,casefolder)
-            casename_Str = casefolder.split("_")[0][4:]
+            casename_int = int(casefolder.split("_")[0][4:])
             watersituation = self._get_data(casefolder_path)
             #保存当前case的数据
-            savename = os.path.join(self.OUTPUT_FOLDER,casename_Str+'.npy')
+            savepath = os.path.join(self.OUTPUT_FOLDER,f'{GROUP_ID}')
+            if not os.path.exists(savepath):
+                os.makedirs(savepath)
+            savename = os.path.join(savepath,f'{self.BPNAME}_{casename_int:03}.npy')
             np.save(savename, watersituation)
             self.NPY_COUNT += 1
        
@@ -135,12 +180,28 @@ class Csv2Npy():
         print(f"Have generated {self.NPY_COUNT} .npy files")
 
 if __name__ == "__main__":
-    BPNAME_List = ['BP028']
+    # BRANCH = 'Master Branch'
+    # BRANCH = 'bata-academic Branch'
+    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'alpha-dev Branch'
+
+
+    BPNAME_List = ['BP021']
+    # BPNAME_List = [
+    #         'BP020', 
+    #         'BP022',
+    #         'BP031',
+    #         'BP032', 
+    #         'BP025',
+    #         'BP028',
+    #         'BP037',
+    #         'BP040',
+    #         ]
 
     for BPNAME in BPNAME_List:
 
         INPUT = f'../CasesData/{BPNAME}'
-        OUTPUT = f'../Save/Master Branch/NpyData/{BPNAME}'
+        OUTPUT = f'../Save/{BRANCH}/NpyData'
 
         mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
         mynpy.run()
