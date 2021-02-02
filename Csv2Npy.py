@@ -186,7 +186,7 @@ if __name__ == "__main__":
     # BRANCH = 'alpha-dev Branch'
 
 
-    BPNAME_List = ['BP008','BP037']
+    BPNAME_List = ['BP021']
     # BPNAME_List = [
     #         'BP020', 
     #         'BP022',

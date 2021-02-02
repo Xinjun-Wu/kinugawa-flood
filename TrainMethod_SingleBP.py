@@ -30,31 +30,31 @@ if __name__ == "__main__":
     # the Group in which target BP sited 
     GROUP_ID_List=[
                     'Ki1',
-                    'Ki2',
+                    # 'Ki2',
                     ]
 
     # the list of list for setting the BP that will be trained
     BPNAME_ListofList = [
-                    ['BP028','BP033','BP043'],  # BPCASE in Ki1
-                    ['BP008'],                   # BPCASE in Ki2
+                    ['BP021'],  # BPCASE in Ki1
+                    # ['BP008'],                   # BPCASE in Ki2
                         ]
     
     # the dic of each BP
     CHECKPOINT_Dic = {
-                        'BP028':None, #  'BP028': None
-                        'BP033':None, # or 'BP028': ['Ki1', 1, 100]
-                        'BP043':None,
-                        'BP008':None,
+                        'BP021':None, #  'BP028': None
+                        # 'BP033':None, # or 'BP028': ['Ki1', 1, 100]
+                        # 'BP043':None,
+                        # 'BP008':None,
                         }
 
     # the dic for using ignore the cases when tran the BPs, 
     # and the ignored cases will not be used as train data 
     # but used for testing and visualizing the performances of the trained models
     EXCEPT_CASE_Dic = {
-                        'BP028':['BP028_006','BP028_014','BP028_023','BP028_031'], #  'BP028': None
-                        'BP033':None, # or 'BP033': ['BP033_006','BP033_014','BP033_023','BP033_031']
-                        'BP043':None,
-                        'BP008':None,
+                        'BP021':['BP021_006','BP021_014','BP021_023','BP021_031'], #  'BP028': None
+                        # 'BP033':None, # or 'BP033': ['BP033_006','BP033_014','BP033_023','BP033_031']
+                        # 'BP043':None,
+                        # 'BP008':None,
                         }
 
     ########################### Set Parameters Area Above ####################################
