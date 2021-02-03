@@ -181,9 +181,9 @@ class GenerateData():
 
 
 if __name__ == "__main__":
-    # BRANCH = 'Master Branch'
+    BRANCH = 'Master Branch'
     # BRANCH = 'bata-academic Branch'
-    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'alpha-cooperate Branch'
     # BRANCH = 'alpha-dev Branch'
 
     #BPNAME_List = ['BP028']

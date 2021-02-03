@@ -176,9 +176,9 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
 
 if __name__ == '__main__':
 
-    # BRANCH = 'Master Branch'
+    BRANCH = 'Master Branch'
     # BRANCH = 'alpha-academic Branch'
-    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'alpha-cooperate Branch'
     # BRANCH = 'beta-dev Branch'
 
     # parser = argparse.ArgumentParser()

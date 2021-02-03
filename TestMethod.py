@@ -22,9 +22,9 @@ if __name__ == "__main__":
     ###################### Initialize Parameters ####################################
 
 
-    # BRANCH = 'Master Branch'
+    BRANCH = 'Master Branch'
     # BRANCH = 'alpha-academic Branch'
-    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'alpha-cooperate Branch'
     # BRANCH = 'beta-dev Branch'
 
     READ_VERSION = 1
