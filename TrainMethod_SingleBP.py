@@ -51,7 +51,7 @@ if __name__ == "__main__":
     #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
     INFO_path = f'../Save/{BRANCH}/NpyData/Info/{BPNAME[:5]}_info.npz'
     INFO_file = np.load(INFO_path)
-    GROUP = INFO_file['GROUP_ID']
+    GROUP = INFO_file['GROUP_ID'].item()
 
 
     EXCEPT_CASE = [f'{BPNAME}_{x:03}' for x in except_case_index] # BP028_006, BP028_014
@@ -91,15 +91,15 @@ if __name__ == "__main__":
                         'SCHEDULER' : scheduler,
                         'MODEL_SAVECYCLE' : [
                                             [2000,500], # the trained model will be Saved periodicaly on Epoch
-                                            [4000,200], # [2000,500] means the model will be saved in each 200 epoch
-                                            [5000,100], # between epoch 2000 and 4000, like 2200 and 2400
+                                            [4000,500], # [2000,500] means the model will be saved in each 200 epoch
+                                            [5000,500], # between epoch 2000 and 4000, like 2200 and 2400
                                             [6000,10],  # please notify that the 4000 can be divided by 200 without remainder
                                             #[2000,10], # and the last epoch must equal to the value of you set in 'EPOCHS' ,like 6000
                                             ],
                         'RECORDER_SAVECYCLE' :[
                                             [2000,500], # the principle is same as above, 
-                                            [4000,200], # we suggest you keep the value same with 'MODEL_SAVECYCLE',
-                                            [5000,100], # thouhgt the value can be changed in the principle
+                                            [4000,500], # we suggest you keep the value same with 'MODEL_SAVECYCLE',
+                                            [5000,500], # thouhgt the value can be changed in the principle
                                             [6000,10],  # 
                                             #[2000,10], # 
                                             ],

@@ -208,7 +208,7 @@ if __name__ == "__main__":
     #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
     INFO_path = f'../Save/{BRANCH}/NpyData/Info/{BPNAME[:5]}_info.npz'
     INFO_file = np.load(INFO_path)
-    GROUP_ID = INFO_file['GROUP_ID']
+    GROUP_ID = INFO_file['GROUP_ID'].item()
     
     print(f"Generating {BPNAME} STEP={STEP} data.")
     mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
