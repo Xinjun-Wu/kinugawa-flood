@@ -226,12 +226,12 @@ def run(rivername,inputfolder,outputfolder,tempfolder,
 
             # check the details of BP
             mainsheetbook = check_bpcase(mainsheetbook,nameBP,BPpath,csv_rows,outputfolder,31,csv_overwrite)
-            # save the mainsheetbook for current bp
-            mainsheetbook.to_csv(outputfolder+f'/{rivername}.csv')
 
             if extract_remove :
                 shutil.rmtree(os.path.join(tempfolder,nameBP))
                 print(f'Remove {os.path.join(tempfolder,nameBP)}')
+        # save the mainsheetbook for current bp
+        mainsheetbook.to_csv(outputfolder+f'/{rivername}.csv')
 
 if __name__ == "__main__":
     river_list = ['Kinugawa','Kokaigawa']
