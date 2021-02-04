@@ -15,7 +15,6 @@ from tqdm import tqdm
 from matplotlib import rcParams
 from mpl_toolkits.axes_grid1 import AxesGrid
 import argparse
-import sys
 
 
 
@@ -176,65 +175,45 @@ def result_output(inputpath,output_folder,step,casename,figsize,dpi,max_value):
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('BPNAME')
+    args = parser.parse_args()
+
+    BPNAME = args.BPNAME
+
+    print(f'{BPNAME}  visualize results start: {time.ctime()}\r\n')
+
     BRANCH = 'Master Branch'
-    # BRANCH = 'alpha-academic Branch'
-    # BRANCH = 'alpha-cooperate Branch'
-    # BRANCH = 'beta-dev Branch'
-
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('BPNAME')
-    # parser.add_argument('STEP')
-    # parser.add_argument("VERSION")
-    # parser.add_argument('EPOCH')
-    # parser.add_argument('CASE')
-    # args = parser.parse_args()
-    # parser.parse_args()
-
-    # BPNAME = args.BPNAME
-    # STEP = int(args.STEP)
-    # VERSION = int(args.VERSION)
-    # EPOCH = int(args.EPOCH)
-    # CASE = args.CASE
-
-    ACADEMIC = False
-
-    GROUP_ID = 'Ki1'
-    #ID_item = GROUP_ID
-    ID_item_list = [
-                'BP020',
-                'BP032',
-                'BP022',
-                'BP025',
-                'BP028',
-                'BP031',
-                'BP037',
-                'BP040',
-                    ]   
-
-    CASEINDEX_list = ['_006','_014','_023','_031']
-
+    # BRANCH = 'Academic Branch'
+    # BRANCH = 'Cooperate Branch'
+    # BRANCH = 'Dev Branch'
 
     STEP = 'Step_01'
     VERSION = 1
-    EPOCH = 11000
+    START_EPOCH =5000
+    END_EPOCH = 6000
+    EPOCH_STEP = 10
 
 
-    for ID_item in ID_item_list:
+    CASEINDEX_list = ['_006','_014','_023','_031']
+
+    for epoch in tqdm(range(START_EPOCH, END_EPOCH, EPOCH_STEP)):
+        epoch += EPOCH_STEP
+
         for CASEINDEX in CASEINDEX_list:
 
-            CASENAME = ID_item+CASEINDEX
+            CASENAME = BPNAME+CASEINDEX
 
             FIGSIZE = (5,10)
             DPI = 100
             MAX_VALUE = 5
 
             
-            INPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}.npz'
-            OUTPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{ID_item}/model_V{VERSION}_epoch_{EPOCH}/{CASENAME}/'
+            INPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{BPNAME}/model_V{VERSION}_epoch_{epoch}/{CASENAME}.npz'
+            OUTPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{BPNAME}/model_V{VERSION}_epoch_{epoch}/{CASENAME}/'
             print(f'Processing for {CASENAME}...')
             result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
-    
-    print('Done!')
+    print(f'{BPNAME}  visualize results end: {time.ctime()}\r\n')
 
 
 

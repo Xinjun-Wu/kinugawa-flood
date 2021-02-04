@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np 
 import os 
 from scipy import integrate
-from tqdm import tqdm
 from sklearn import preprocessing
 from tools import area_extract
+import argparse
+import time
 
 class GenerateData():
     """ Class used for creating training npz files from case npy files.
@@ -181,35 +182,39 @@ class GenerateData():
 
 
 if __name__ == "__main__":
-    BRANCH = 'Master Branch'
-    # BRANCH = 'bata-academic Branch'
-    # BRANCH = 'alpha-cooperate Branch'
-    # BRANCH = 'alpha-dev Branch'
 
-    #BPNAME_List = ['BP028']
-    BPNAME_List = ['BP021']
-    # BPNAME_List = [
-    #         'BP020', 
-    #         'BP022',
-    #         'BP031',
-    #         'BP032', 
-    #         'BP025',
-    #         'BP028',
-    #         'BP037',
-    #         'BP040',
-    #         ]
+    parser = argparse.ArgumentParser()
+    #parser.add_argument('GROUP')
+    parser.add_argument('BPNAME')
+    args = parser.parse_args()
+
+    #GROUP_ID = args.GROUP
+    BPNAME = args.BPNAME
+
+    print(f'{BPNAME}  generate data start: {time.ctime()}\r\n')
+
+    BRANCH = 'Master Branch'
+    # BRANCH = 'Academic Branch'
+    # BRANCH = 'Cooperate Branch'
+    # BRANCH = 'Dev Branch'
+
     TIMEINTERVAL = 10
     N_DELTA = 1
     STEP = 1
-    GROUP_ID = 'Ki1'
 
-    for BPNAME in BPNAME_List:
-        INPUT = f'../Save/{BRANCH}/NpyData'
-        OUTPUT = f'../Save/{BRANCH}/TrainData'
+    INPUT = f'../Save/{BRANCH}/NpyData'
+    OUTPUT = f'../Save/{BRANCH}/TrainData'
 
-        print(f"\n Generating {BPNAME} STEP={STEP} data.")
-        mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
-        mygenerater.run()
+    #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
+    INFO_path = f'../Save/{BRANCH}/NpyData/Info/{BPNAME[:5]}_info.npz'
+    INFO_file = np.load(INFO_path)
+    GROUP_ID = INFO_file['GROUP_ID']
+    
+    print(f"Generating {BPNAME} STEP={STEP} data.")
+    mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
+    mygenerater.run()
+
+    print(f'\r\n{BPNAME} generate data end: {time.ctime()}')
 
 
 
