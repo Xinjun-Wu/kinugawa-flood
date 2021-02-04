@@ -1,6 +1,0 @@
-name: pytorch
-channels:
-  - numba
-  - defaults
-prefix: C:\Users\dl-box\AppData\Local\conda\conda\envs\pytorch
-

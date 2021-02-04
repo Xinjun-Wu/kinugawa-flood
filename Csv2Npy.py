@@ -3,6 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import argparse
+import time
 
 
 class Csv2Npy():
@@ -180,28 +182,24 @@ class Csv2Npy():
         print(f"Have generated {self.NPY_COUNT} .npy files")
 
 if __name__ == "__main__":
-    # BRANCH = 'Master Branch'
-    # BRANCH = 'bata-academic Branch'
-    BRANCH = 'alpha-cooperate Branch'
-    # BRANCH = 'alpha-dev Branch'
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('BPNAME')
+    args = parser.parse_args()
 
-    BPNAME_List = ['BP021']
-    # BPNAME_List = [
-    #         'BP020', 
-    #         'BP022',
-    #         'BP031',
-    #         'BP032', 
-    #         'BP025',
-    #         'BP028',
-    #         'BP037',
-    #         'BP040',
-    #         ]
+    BPNAME = args.BPNAME
 
-    for BPNAME in BPNAME_List:
+    print(f'{BPNAME} read csv start: {time.ctime()}\r\n')
 
-        INPUT = f'../CasesData/{BPNAME}'
-        OUTPUT = f'../Save/{BRANCH}/NpyData'
+    BRANCH = 'Master Branch'
+    # BRANCH = 'Academic Branch'
+    # BRANCH = 'Cooperate Branch'
+    # BRANCH = 'Dev Branch'
 
-        mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
-        mynpy.run()
+    INPUT = f'../CasesData/{BPNAME}'
+    OUTPUT = f'../Save/{BRANCH}/NpyData'
+
+    mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
+    mynpy.run()
+
+    print(f'\r\n{BPNAME} read csv end: {time.ctime()}')
