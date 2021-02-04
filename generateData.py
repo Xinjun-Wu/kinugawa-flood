@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np 
 import os 
 from scipy import integrate
-from tqdm import tqdm
 from sklearn import preprocessing
 from tools import area_extract
+import argparse
+import time
 
 class GenerateData():
     """ Class used for creating training npz files from case npy files.
@@ -116,7 +117,8 @@ class GenerateData():
 
         integrate_sequence = integrate_sequence.reshape(N_sample, N_addchannel, self.N_DELTA+1)
         
-        for case_id, (case_name, case_path) in enumerate(tqdm(zip(case_name_List,case_path_List))):
+        # for case_id, (case_name, case_path) in enumerate(tqdm(zip(case_name_List,case_path_List))):
+        for case_name, case_path in zip(case_name_List,case_path_List):
             case_name_Str = f"case{int(case_name.split('.')[0][-3:])}" # BP028_001 ==> case1
             inflow_data = Inflow_DF[case_name_Str].to_numpy() #当前case的入流数据
             watersituation = np.load(case_path) # 当前case的水流状态 numpy的shape 为(N, C, H, W)
@@ -159,35 +161,60 @@ class GenerateData():
             learning_data = np.concatenate((DEM_MinMax_Array, learning_value, inint_inflow_Array),axis = 1)
             teacher_data = teacher_value
 
+            print(f'Saving {self.BPNAME},{case_name_Str}')
+            # for i in tqdm(range(learning_data.shape[0])):
+            #     savename = os.path.join(self.OUTPUT_FOLDER, f'Step_{int(self.STEP):02}',f"{self.GROUP_ID}",
+            #                             f"{self.BPNAME}",
+            #                             f"{self.BPNAME}_{int(case_name_Str[4:]):03}_{i:03}.npz")
+            #     np.savez(savename, learning_data=learning_data[i], teacher_data=teacher_data[i])
+            #     #print(f'Saving {savename}')
             savename = os.path.join(self.OUTPUT_FOLDER, f'Step_{int(self.STEP):02}',f"{self.GROUP_ID}",
                                     f"{self.BPNAME}_{int(case_name_Str[4:]):03}.npz")
             np.savez(savename, learning_data=learning_data, teacher_data=teacher_data)
 
-        self.NPZ_COUNT = case_id +1
+        #self.NPZ_COUNT = len(case_name_List) +1
 
 
     def run(self):
         case_name_List, case_path_List = self._walk_npy_folder()
         self._generate_data(case_name_List, case_path_List)
-        print(f"Have generated {self.NPZ_COUNT} .npz files")
+        #print(f"Have generated {self.NPZ_COUNT} .npz files")
 
 
 if __name__ == "__main__":
 
-    BPNAME_List = ['BP028']
-    #BPNAME_List = ['BP032']
+    parser = argparse.ArgumentParser()
+    #parser.add_argument('GROUP')
+    parser.add_argument('BPNAME')
+    args = parser.parse_args()
+
+    #GROUP_ID = args.GROUP
+    BPNAME = args.BPNAME
+
+    print(f'{BPNAME}  generate data start: {time.ctime()}\r\n')
+
+    BRANCH = 'Master Branch'
+    # BRANCH = 'Academic Branch'
+    # BRANCH = 'Cooperate Branch'
+    # BRANCH = 'Dev Branch'
+
     TIMEINTERVAL = 10
     N_DELTA = 1
     STEP = 1
-    GROUP_ID = 'Ki1'
 
-    for BPNAME in BPNAME_List:
-        INPUT = f'../NpyData'
-        OUTPUT = f'../TrainData'
+    INPUT = f'../Save/{BRANCH}/NpyData'
+    OUTPUT = f'../Save/{BRANCH}/TrainData'
 
-        print(f"\n Generating {BPNAME} STEP={STEP} data.")
-        mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
-        mygenerater.run()
+    #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
+    INFO_path = f'../Save/{BRANCH}/NpyData/Info/{BPNAME[:5]}_info.npz'
+    INFO_file = np.load(INFO_path)
+    GROUP_ID = INFO_file['GROUP_ID'].item()
+    
+    print(f"Generating {BPNAME} STEP={STEP} data.")
+    mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
+    mygenerater.run()
+
+    print(f'\r\n{BPNAME} generate data end: {time.ctime()}')
 
 
 

@@ -17,6 +17,12 @@ from tools import data_decorater
 
 if __name__ == "__main__":
         ###################### Initialize Parameters ####################################
+
+    # BRANCH = 'Master Branch'
+    # BRANCH = 'alpha-academic Branch'
+    BRANCH = 'alpha-cooperate Branch'
+    # BRANCH = 'beta-dev Branch'
+
     READ_VERSION = 1
     SAVE_VERSION = 1
     TEST_SIZE = 0.3
@@ -29,14 +35,11 @@ if __name__ == "__main__":
     STEP_List = [1]
 
     CHECKPOINT = None
-    CHECKPOINT = ['Ki1', 1, 99] ###STEP == 1 , EPOCH == 590
+    CHECKPOINT = ['Ki1', 1, 10000] ###STEP == 1 , EPOCH == 590
     CHECK_EACH_STEP = False
     CHECK_EACH_GROUP = False
     SHUFFLE = True
     N_DELTA = 1
-    
-    ACADEMIC = False
-
 
     #提取checkpoint的信息
     if CHECKPOINT is not None:
@@ -64,53 +67,69 @@ if __name__ == "__main__":
                 CHECKPOINT[1] = STEP
 
 
-            # EXCEPT_BP = ['BP032']
-            EXCEPT_CASE = ['BP028_006','BP028_014','BP028_023','BP028_031']
-            EXCEPT_BP = None
-            ONLY_BP = ['BP028'] #仅仅允许设置1个BP
-            # EXCEPT_CASE = None
+            EXCEPT_BP = ['BP028']
+            #EXCEPT_CASE = ['BP028_006','BP028_014','BP028_023','BP028_031']
+            #EXCEPT_BP = None
+            # ONLY_BP = [
+            #     # ['BP020'],
+            #     # ['BP022'],
+            #     # ['BP031'],
+            #     ['BP032'],
+            #     # ['BP025'],
+            #     # ['BP028'],
+            #     # ['BP037'],
+            #     # ['BP040'],
+            #     ]
+            ONLY_BP =None
+            EXCEPT_CASE = None
 
-            DATA_FOLDER = f'../TrainData'
+            DATA_FOLDER = f'../Save/{BRANCH}/TrainData'
 
-            if ACADEMIC:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/Academic'
-            elif ONLY_BP is not None:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{ONLY_BP[0]}'
-                print(f'BP_ID = {ONLY_BP[0]}, STEP = {int(STEP):02}')
-            else:
-                INPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-                OUTPUT_FOLDER = f'../Save/Step_{int(STEP):02}/{GROUP_ID}'
-                print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
+            # for ONLY_item in ONLY_BP:
+                
+            #     if ONLY_BP is not None:
+            #         INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_item[0]}'
+            #         OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{ONLY_item[0]}'
+            #         print(f'BP_ID = {ONLY_BP[0]}, STEP = {int(STEP):02}')
+            #     else:
+            #         INPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+            #         OUTPUT_FOLDER = f'../Save/alpha-cooperate Branch/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+            #         print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
+            INPUT_FOLDER = f'../Save/{BRANCH}/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+            OUTPUT_FOLDER = f'../Save/{BRANCH}/TrainResults/Step_{int(STEP):02}/{GROUP_ID}'
+            print(f'GROUP_ID = {GROUP_ID}, STEP = {int(STEP):02}')
 
             mydataset = CustomizeDataSets(DATA_FOLDER,STEP,GROUP_ID,EXCEPT_BP,ONLY_BP,EXCEPT_CASE,TEST_SIZE,SHUFFLE,RANDOM_SEED)
             #model = ConvNet_2(3+int(STEP/6))
             #add_dem = data_decorater(INFO_path)
             model = select_net(GROUP_ID, 1+3+int(STEP/N_DELTA))
-            MyTrainAndTest = TrainAndTest(model,mydataset,INPUT_FOLDER,OUTPUT_FOLDER,GROUP_ID,CHECKPOINT,READ_VERSION,SAVE_VERSION)
+            MyTrainAndTest = TrainAndTest(model,mydataset,INPUT_FOLDER,OUTPUT_FOLDER,None,GROUP_ID,CHECKPOINT,READ_VERSION,SAVE_VERSION)
             ############################## Train Paramters #################################
             LR = 0.0001
             Train_lambda = lambda epoch: 1/np.sqrt(((epoch % 500)+1.0))
             optimizer = optim.Adam(MyTrainAndTest.MODEL.parameters(), lr = LR, weight_decay = 1e-6)
             scheduler = optim.lr_scheduler.LambdaLR(optimizer, Train_lambda)
             TRAIN_PARAMS_DICT = {
-                                'EPOCHS' : 100,
-                                'BATCHSIZES' : 32,
+                                'EPOCHS' : 15000,
+                                'BATCHSIZES' : 128,
                                 'LOSS_FN' : nn.MSELoss(),
                                 'OPTIMIZER' : optimizer,
                                 'SCHEDULER' : scheduler,
-                                'MODEL_SAVECYCLE' : [[20,10], #前2000 epoch 每过500个epoch保存一下
-                                                     [40,5], #前2000-4000 epoch 每过250个epoch保存一下
-                                                     [60,2],
-                                                     [80, 2],
-                                                     [100,1]],
-                                'RECORDER_SAVECYCLE' :[[20,10], #前2000 epoch 每过500个epoch保存一下
-                                                     [40,5], #前2000-4000 epoch 每过250个epoch保存一下
-                                                     [60,2],
-                                                     [80, 1],
-                                                     [100,1]],
-                                'NUM_WORKERS' : 3,
+                                'MODEL_SAVECYCLE' : [
+                                                    [2000,500], #前2000 epoch 每过500个epoch保存一下
+                                                    [4000,250], #前2000-4000 epoch 每过250个epoch保存一下
+                                                    [8000,200],
+                                                    [12000,100],
+                                                    [15000,50]
+                                                    ],
+                                'RECORDER_SAVECYCLE' :[
+                                                    [2000,500], #前2000 epoch 每过500个epoch保存一下
+                                                    [4000,250], #前2000-4000 epoch 每过250个epoch保存一下
+                                                    [8000,200],
+                                                    [10000,100],
+                                                    [15000,50]
+                                                    ],
+                                'NUM_WORKERS' : 0,
                                 'VALIDATION' : True,
                                 'VERBOSE' : 1,
                                 'TRANSFER' : False,

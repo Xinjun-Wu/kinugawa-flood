@@ -1,61 +1,169 @@
 ############################### Kinugawa-flood ##############################
 
-channel
-    *master                     <发布稳定版本，能够在九大或者东京机器上稳定运行>
-    *alpha-cooperate            <根据合作研究需求进行的开发分支>
-    *beta-academic              <根据论文要求与想法进行的开发分支>
-    *feature                    <添加新功能时先在feature分支上实现，
-                                 并测试通过后再合并到其他分支>
-    *bugfix                     <此分支为bug分支，当存在bug时，
-                                 在此分支解决后再布署到其他相对
-                                 的分支>
+branches
+        # master >>>>>>>>>>>>>>>>>>     发布稳定版本，能够在九大或者东京机器上稳定运行;
+        # alpha-cooperate >>>>>>>>>     根据合作研究需求进行的开发分支;
+        # alpha-dev >>>>>>>>>>>>>>>     可能的下一步开发分支;
+        # beta-academic >>>>>>>>>>>     根据论文要求与想法进行的开发分支;
+        # feature >>>>>>>>>>>>>>>>>     添加新功能时先在feature分支上实现，
+                                        并测试通过后再合并到其他分支;
+        # bugfix >>>>>>>>>>>>>>>>>>     此分支为bug分支，当存在bug时，
+                                        在此分支解决后再布署到其他相对分支
 
 ##############################################################################
 
-submit 005 <optimize>
-2020-10-17
-    optimize
-    Csv2Npy.py, TrainAndTest.py, TrainMethod.py 参数传递
-    # kinugawa-flood
+############################## Running Steps #################################
 
-submit 004 <optimize>
-2020-10-15
-    optimize 
-        修改文件目录的组织方式及命名方式，所有BP的case放在同一个文件夹，通过文件名进行定位；
-        训练时可选择不参与训练的BP或者CASE;
-        其他优化
+Notice: Before Running those scripts, please make sure that you have prepared the
+        essential deep leearning env featured with pytorch and the others packages, 
+        like scipy, scikit-learn, tqdm and so on. 
 
-optimize
-    results_output.py 优化生成图片的排版
-     其他关联tools.py相应的更改
+        This document assume that you are familiar with the basic concepts of GitHub 
+        technologies, such as concepts of fork, pull, commit, push, pull request and 
+        issue. click https://docs.github.com/en if you need.
 
-submit 003 <add/optimize>
-2020-10-06 
+        If you enccounter some bugs or have some suggestions, please create issue or 
+        pull request.
 
-add 
-    tootls.py 生成掩膜时，自动将张量输入转化为numpy array
-                两种淹没生成方式，less or less_equal
+Step 1  Csv2Npy.py
 
-submit 002 <debug>
-2020-10-03 
-debug 
-    TrainAndTest.py 在test时或者将来的预测时，初始时刻使用破堤点作为目标区域生成 buffered mask, 其他时刻使用上一时刻的洪水范围
+        % params %
+        {
+                BPNAME_List = ['BP021','BP028]          # the list of name str of each BP
+                INPUT = f'../CasesData/{BPNAME}'        # the input folder of each BP, optional 
+                                                        # paramter. We recommend don't change it
+                                                        # but put the CasesData folder in the same
+                                                        # path with the current repo. 
+                                                        # the directory tree can be seen as below.
+                                                        # ..
+                                                        # .|CasesData/
+                                                        #  |     |BP028/
+                                                        #  |     |BP027/
+                                                        #  |     |...
+                                                        # .|kinugawa-flood/
+                                                        #  |     |Csv2Npy.py
+                                                        #  |     |...
+                                                        # .|Save
+                                                        #  |     |Master Branch/
+                                                        #  |     |...
+        }
 
-submit 001 <add/debug/delete/optimize>
-2020-10-03 
-add
-    Csv2Npy.py 添加忽略文件及文件夹功能，在遍历所有case列表时，自动跳过 except_list 内的条目。
+        # Please make sure that all case data is ready and any error is not included,
+        # In general, each BP have 31 cases and 72 csv files are coverd by each case.
+        # Besides, we suggest that the initial velocity should not equal to zero. If 
+        # any BP have that velocity error, please ignore that the whole BP until the
+        # all cases data are corrected.
 
-    generateData.py 通过水流速度的范围对水深区域的值进行提取，非水流泛滥区域的水深值填充为0；
-                    对入流流量的值进行小时定标标准化，通过原有数值除以定值10000000(一千万)实现。
+        # Meanwhile, please fill the row sheet of 破堤点格子番号.xlsx file in current path, if the information 
+        # you need was blank
+        
+        
+Step 2 generateData.py
 
-    TrainAndTest.py 数据参与训练或者测试时添加DEM等固定的数据；
-                    对预测的数据进行缓冲后的淹没处理，剔除非研究区域的错误预测值的影响。
+        % params %
+        {
+                BPNAME_List = ['BP021','BP028]          # the list of name str of each BP
+                GROUP_ID = 'Ki1'                        # the str name of the group that
+                                                        # above BP belong to.
+                                                        # the information of Group can be 
+                                                        # found in the 破堤点格子番号.xlsx 
+                                                        # file.
+        }
 
-    TrainMethod.py 训练前传入数据装饰器类的实例，用于在训练与测试时添加DEM等数据。
+Step 3 TrainMethod_SingleBP.py
 
-delete
-    generateData.py 移除添加DEM数据的通道
+        % params %
+        {
+                GROUP_ID_List=[                         # the list of group id
+                        'Ki1',
+                        'Ki2',
+                        ]
+                BPNAME_ListofList = [                   # the cooredponding BP that belong 
+                        ['BP021','BP028'],              # to GROUP_ID_List, 'BP021' and 'BP028'
+                        ['BP008'],                      # belong to Ki1, 'BP008' belong to Ki2
+                                ]
+                CHECKPOINT_Dic = {                      # the checkpoint of each BP, None or list
+                        'BP028':['Ki1', 1, 100]         # ['Ki1', 1, 100] means [GROUP, STEP, EPOCH]
+                        'BP008':None,                   # None means no checkpoint, train it from 0
+                                }
+                EXCEPT_CASE_Dic = {                     # ignore the cases when tran the BPs,
+                                'BP021':['BP021_006',   # None or list
+                                        'BP021_014',    #
+                                        'BP021_023',
+                                        'BP021_031'], 
+                                'BP033':None, 
+                                }
+        TRAIN_PARAMS_DICT = {                           # the list of parameters that used in train process
+                'EPOCHS' : 6000,                        # the epoch that specificed in train loops
+                'BATCHSIZES' : 128,                     # change it according to the memory of your GPU
+                'MODEL_SAVECYCLE' : [
+                                [2000,500], # the trained model will be Saved periodicaly on Epoch
+                                [4000,200], # [2000,500] means the model will be saved in each 200 epoch
+                                [5800,100], # between epoch 2000 and 4000, like 2200 and 2400, please
+                                [6000,10],  # notify that the 4000 can be divided by 200 without remainder
+                                #[2000,10], # and the last epoch must equal to the value of you set 
+                                            # in 'EPOCHS' ,like 6000
+                                ],
+                'RECORDER_SAVECYCLE' :[
+                                [2000,500], # the principle is same as above, 
+                                [4000,200], # we suggest you keep the value same with 'MODEL_SAVECYCLE',
+                                [5800,100], # thouhgt the value can be changed in the principle
+                                [6000,10],  # 
+                                #[2000,10], # 
+                                ],
+                ... other parameters        # don't need to change
+        }
 
-optimize 
-    细节优化
+Step 4 TestMethod.py
+
+        % params %
+        {
+                GROUP_ID_List = ['Ki1']         # the name of group, allowed to set only one group 
+                                                # due to the old edition that i write, if you add a second
+                                                # group name, the script may be encounter error.
+                BP_ID_List = [
+                                'BP020',        # the BP name that you want to test
+                                'BP032',        # all the elements in list are belong to group
+                                'BP022',        # that seted in GROUP_ID_List, like Ki1
+                                'BP025',
+                                'BP028',
+                                'BP031',
+                                'BP037',
+                                'BP040',
+                                ] 
+                START_EPOCH =10990              # the range of epoch, start point not included.
+                END_EPOCH = 11000               # 10990 will not be tested, but 11000 will.
+                EPOCH_STEP = 10                 # don't change it in avoid of unpredictable errors
+
+                TEST_CASE_LIST = ['_006','_014','_023','_031']  # those cases will be tested
+                                                                # all BP share the varible
+                                                                # please keep same with EXCEPT_CASE_Dic
+                                                                # in step 3
+        }
+
+Step 5 TestMethod.py    # Visualize the results of test
+
+        % params %
+        {
+                GROUP_ID = 'Ki1'        # the name of group
+                ID_item_list = [        # the BP name that you want to visualize
+                        'BP020',        # all the elements in list are belong to group
+                        'BP032',        # that seted in GROUP_ID, like Ki1
+                        'BP022',
+                        'BP025',
+                        'BP028',
+                        'BP031',
+                        'BP037',
+                        'BP040',
+                        ]   
+                CASEINDEX_list = ['_006','_014','_023','_031']  # those cases will be visualized
+                                                                # all BP share the varible
+                                                                # please keep same with EXCEPT_CASE_Dic
+                                                                # in step 3
+                EPOCH = 11000                                   # please specific the target epoch
+                                                                # the results of target epoch will be
+                                                                # draw as a sequences of plots
+        }
+############################## Running Steps End #################################
+吴 鑫俊
+bent20140204@outlook.com

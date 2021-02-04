@@ -1,8 +1,10 @@
-from genericpath import exists
+import re
 import os
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import argparse
+import time
 
 
 class Csv2Npy():
@@ -23,7 +25,7 @@ class Csv2Npy():
         #     os.makedirs(self.OUTPUT_FOLDER)
     
 
-    def _get_PointLists(self,listfile=r'../氾濫流量ハイドロ/破堤点毎格子情報_ver20200515.xlsx',skiprows=0,index_col=0):
+    def _get_PointLists(self,listfile=r'破堤点格子番号.xlsx',skiprows=0,index_col=0):
         """
         获取破堤点网格番号
             
@@ -36,20 +38,20 @@ class Csv2Npy():
             Example:
                 Points_I_J = [[270,1], [271,1], [272,1], [273,1], [274,1]]
         """
-        pointlists = pd.read_excel(listfile, skiprows=skiprows, index_col=index_col)
+        pointlists = pd.read_excel(listfile, skiprows=skiprows, index_col=index_col).dropna()
         BPname = self.BPNAME
         # return a array : array[270,271,272,273,274.1]
         # points = pointlists.loc[BPname].to_numpy()[3:-1] 
         points = pointlists.loc[BPname].to_numpy()[3:9] 
         Points_I_J = []
         for i in range(len(points)-1):
-            Points_I_J.append([points[i],points[-1]])
+            Points_I_J.append([int(points[i]),int(points[-1])])
         #Points_I_J = [[270,1], [271,1], [272,1, [273,1], [274,1]]
         Group_ID = pointlists.loc[BPname][0]
         return Group_ID, Points_I_J
 
 
-    def _get_Inflow(self,inflowfile=r'../氾濫流量ハイドロ/氾濫ハイドロケース_10分間隔_20200127.xlsx',
+    def _get_Inflow(self,inflowfile=r'氾濫ハイドロケース_10分間隔_20200127.xlsx',
                         header=0,sheet_name='氾濫ハイドロパターン (10分間隔)'):
         """
         获取各个工况下的入流记录
@@ -67,6 +69,8 @@ class Csv2Npy():
 
 
     def _get_info_(self):
+        ijCoordinates = ''
+        xyCoordinates = ''
         csvfile=self.INPUT_FOLDER+ os.sep + "case01/case01_1.csv"
         if not os.path.exists(csvfile):
             csvfile=self.INPUT_FOLDER+ os.sep + "case1/case1_1.csv"
@@ -104,6 +108,15 @@ class Csv2Npy():
     def _get_data(self, casefolder_path):
 
         index_List = os.listdir(casefolder_path)
+
+        # filter the unwanted files
+        filter1 = re.compile('^case\d{1,2}_\d{1,2}.csv$',flags=0)
+        filter2 = re.compile('^case\d{1,2}_\d{1,2}.csv$',flags=0)
+
+        index_List_filtered = [d for d in index_List if filter1.match(d) or filter2.match(d)]
+
+        index_List = index_List_filtered
+
         # if except_list is not None:
         #     for except_file in except_list:
         #         index_List.remove(except_file)
@@ -128,14 +141,26 @@ class Csv2Npy():
 
         return watersituation
 
-    def _walk_cases(self, except_list=None):
+    def _walk_cases(self):
 
         GROUP_ID = self._get_info_()
         casefolder_List = os.listdir(self.INPUT_FOLDER)
-        if except_list is not None:
-            for except_file in except_list:
-                if except_file in casefolder_List:
-                    casefolder_List.remove(except_file)
+
+        # filter the unwanted folder
+        filter1 = re.compile('^case\d$',flags=0)
+        filter2 = re.compile('^case\d\d$',flags=0)
+
+        casefolder_List_filted = [d for d in casefolder_List if filter1.match(d) or filter2.match(d)]
+
+        casefolder_List = casefolder_List_filted
+
+        # path7z_List = list(map(lambda x:os.path.join(inputfolder,x), name7z_List))
+        # nameBP_List = list(map(lambda x:x.split('.')[0], name7z_List))
+
+        # if except_list is not None:
+        #     for except_file in except_list:
+        #         if except_file in casefolder_List:
+        #             casefolder_List.remove(except_file)
         casefolder_List.sort(key=lambda x:int(x.split('_')[0][4:]), reverse=False)
 
         #遍历每个case
@@ -152,19 +177,29 @@ class Csv2Npy():
             self.NPY_COUNT += 1
        
 
-    def run(self,except_list):
-        self._walk_cases(except_list)
+    def run(self):
+        self._walk_cases()
         print(f"Have generated {self.NPY_COUNT} .npy files")
 
 if __name__ == "__main__":
-    BPNAME_List = ['BP028']
-    #BPNAME_List = ['BP032']
-    except_list = ['bp028.ipro']
 
-    for BPNAME in BPNAME_List:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('BPNAME')
+    args = parser.parse_args()
 
-        INPUT = f'../CasesData/{BPNAME}'
-        OUTPUT = f'../NpyData'
+    BPNAME = args.BPNAME
 
-        mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
-        mynpy.run(except_list)
+    print(f'{BPNAME} read csv start: {time.ctime()}\r\n')
+
+    BRANCH = 'Master Branch'
+    # BRANCH = 'Academic Branch'
+    # BRANCH = 'Cooperate Branch'
+    # BRANCH = 'Dev Branch'
+
+    INPUT = f'../CasesData/{BPNAME}'
+    OUTPUT = f'../Save/{BRANCH}/NpyData'
+
+    mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
+    mynpy.run()
+
+    print(f'\r\n{BPNAME} read csv end: {time.ctime()}')
