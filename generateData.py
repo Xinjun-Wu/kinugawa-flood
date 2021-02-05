@@ -191,11 +191,12 @@ if __name__ == "__main__":
     #GROUP_ID = args.GROUP
     BPNAME = args.BPNAME
 
-    print(f'{BPNAME}  generate data start: {time.ctime()}\r\n')
+    with open('./runingfiles/log.txt', 'a') as f:
+        f.write(f'\n{time.ctime()}: {BPNAME} generate data start ...')
 
-    BRANCH = 'Master Branch'
+    # BRANCH = 'Master Branch'
     # BRANCH = 'Academic Branch'
-    # BRANCH = 'Cooperate Branch'
+    BRANCH = 'Cooperate Branch'
     # BRANCH = 'Dev Branch'
 
     TIMEINTERVAL = 10
@@ -205,16 +206,24 @@ if __name__ == "__main__":
     INPUT = f'../Save/{BRANCH}/NpyData'
     OUTPUT = f'../Save/{BRANCH}/TrainData'
 
-    #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
-    INFO_path = f'../Save/{BRANCH}/NpyData/Info/{BPNAME[:5]}_info.npz'
-    INFO_file = np.load(INFO_path)
-    GROUP_ID = INFO_file['GROUP_ID'].item()
-    
-    print(f"Generating {BPNAME} STEP={STEP} data.")
-    mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
-    mygenerater.run()
+    try:
 
-    print(f'\r\n{BPNAME} generate data end: {time.ctime()}')
+        #读取信息描述文件，提取破堤区域数值模拟网格代号GROUP_ID
+        INFO_path = f'../Save/{BRANCH}/NpyData/Info/{BPNAME[:5]}_info.npz'
+        INFO_file = np.load(INFO_path)
+        GROUP_ID = INFO_file['GROUP_ID'].item()
+        
+        print(f"Generating {BPNAME} STEP={STEP} data.")
+        mygenerater = GenerateData(INPUT, OUTPUT, GROUP_ID, BPNAME,TIMEINTERVAL, N_DELTA, STEP, )
+        mygenerater.run()
+
+        with open('./runingfiles/log.txt', 'a') as f:
+            f.write(f'\n{time.ctime()}: {BPNAME} generate data end.')
+            
+    except Exception as e:
+        print(f'{BPNAME} error: {e}')
+        with open('./runingfiles/log.txt', 'a') as f:
+            f.write(f'\n{time.ctime()}:     ERROR: {e}')
 
 
 
