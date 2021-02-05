@@ -189,7 +189,8 @@ if __name__ == "__main__":
 
     BPNAME = args.BPNAME
 
-    print(f'{BPNAME} read csv start: {time.ctime()}\r\n')
+    with open('./runingfiles/log.txt', 'a') as f:
+        f.write(f'\n{time.ctime()}: {BPNAME} read csv start ...')
 
     BRANCH = 'Master Branch'
     # BRANCH = 'Academic Branch'
@@ -199,7 +200,15 @@ if __name__ == "__main__":
     INPUT = f'../CasesData/{BPNAME}'
     OUTPUT = f'../Save/{BRANCH}/NpyData'
 
-    mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
-    mynpy.run()
+    try:
+        mynpy = Csv2Npy(INPUT,OUTPUT,BPNAME)
+        mynpy.run()
 
-    print(f'\r\n{BPNAME} read csv end: {time.ctime()}')
+        with open('./runingfiles/log.txt', 'a') as f:
+            f.write(f'\n{time.ctime()}: {BPNAME} read csv end.')
+
+    except Exception as e:
+        print(f'{BPNAME} error: {e}')
+        with open('./runingfiles/log.txt', 'a') as f:
+            f.write(f'\n{time.ctime()}:     ERROR: {e}')
+
