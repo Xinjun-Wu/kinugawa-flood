@@ -264,7 +264,7 @@ class TrainAndTest():
                                 'MODEL':self.MODEL.state_dict(),
                                 'RECORDER':RECORDER_DIC
                                 }
-                torch.save(model_state, os.path.join(self.TRAIN_FOLDER, 'model', 
+                torch.save(model_state, os.path.join(self.OUTPUT_FOLDER, 'model', 
                                                         f'model_V{self.SAVE_VERSION}_epoch_{epoch}.pt'))
 
                 ######################  Save Optimizer&Scheduler  ####################################
@@ -272,7 +272,7 @@ class TrainAndTest():
                                 'OPTIMIZER':TRAIN_OPTIMIZER.state_dict(),
                                 'SCHEDULER':TRAIN_SCHEDULER.state_dict()
                                 }
-                torch.save(other_state, os.path.join(self.TRAIN_FOLDER, 'recorder', 
+                torch.save(other_state, os.path.join(self.OUTPUT_FOLDER, 'recorder', 
                                                             f'optim_V{self.SAVE_VERSION}_epoch_{epoch}.pt'))
                 
             ######################  Save Recorder  ####################################
