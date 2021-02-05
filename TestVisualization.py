@@ -181,10 +181,11 @@ if __name__ == '__main__':
 
     BPNAME = args.BPNAME
 
-    print(f'{BPNAME}  visualize results start: {time.ctime()}\r\n')
+    with open('./runingfiles/log.txt', 'a') as f:
+        f.write(f'\n{time.ctime()}: {BPNAME} visualize results start ...')
 
-    BRANCH = 'Master Branch'
-    # BRANCH = 'Academic Branch'
+    # BRANCH = 'Master Branch'
+    BRANCH = 'Academic Branch'
     # BRANCH = 'Cooperate Branch'
     # BRANCH = 'Dev Branch'
 
@@ -193,29 +194,33 @@ if __name__ == '__main__':
     START_EPOCH =5000
     END_EPOCH = 6000
     EPOCH_STEP = 10
-
-
     CASEINDEX_list = ['_006','_014','_023','_031']
 
-    for epoch in tqdm(range(START_EPOCH, END_EPOCH, EPOCH_STEP)):
-        epoch += EPOCH_STEP
+    try:
+        for epoch in tqdm(range(START_EPOCH, END_EPOCH, EPOCH_STEP)):
+            epoch += EPOCH_STEP
 
-        for CASEINDEX in CASEINDEX_list:
+            for CASEINDEX in CASEINDEX_list:
 
-            CASENAME = BPNAME+CASEINDEX
+                CASENAME = BPNAME+CASEINDEX
 
-            FIGSIZE = (5,10)
-            DPI = 100
-            MAX_VALUE = 5
+                FIGSIZE = (5,10)
+                DPI = 100
+                MAX_VALUE = 5
 
-            
-            INPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{BPNAME}/model_V{VERSION}_epoch_{epoch}/{CASENAME}.npz'
-            OUTPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{BPNAME}/model_V{VERSION}_epoch_{epoch}/{CASENAME}/'
-            print(f'Processing for {CASENAME}...')
-            result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
-    print(f'{BPNAME}  visualize results end: {time.ctime()}\r\n')
+                
+                INPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{BPNAME}/model_V{VERSION}_epoch_{epoch}/{CASENAME}.npz'
+                OUTPUT_FOLDER = f'../Save/{BRANCH}/TestResults/{STEP}/{BPNAME}/model_V{VERSION}_epoch_{epoch}/{CASENAME}/'
+                print(f'Processing for {CASENAME}...')
+                result_output(INPUT_FOLDER,OUTPUT_FOLDER,1,CASENAME,FIGSIZE,DPI,MAX_VALUE)
 
+        with open('./runingfiles/log.txt', 'a') as f:
+            f.write(f'\n{time.ctime()}: {BPNAME} visualize results end.')
 
+    except Exception as e:
+        print(f'{BPNAME} error: {e}')
+        with open('./runingfiles/log.txt', 'a') as f:
+            f.write(f'\n{time.ctime()}:     ERROR: {e}')
 
     
 
