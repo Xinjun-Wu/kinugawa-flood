@@ -177,9 +177,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('BPNAME')
+    parser.add_argument('START_EPOCH')
+    parser.add_argument('END_EPOCH')
     args = parser.parse_args()
 
     BPNAME = args.BPNAME
+    START_EPOCH = int(args.START_EPOCH)
+    END_EPOCH = int(args.END_EPOCH)
 
     with open('./runingfiles/log.txt', 'a') as f:
         f.write(f'\n{time.ctime()}: {BPNAME} visualize results start ...')
@@ -191,9 +195,9 @@ if __name__ == '__main__':
 
     STEP = 'Step_01'
     VERSION = 1
-    START_EPOCH =5000
-    END_EPOCH = 6000
-    EPOCH_STEP = 10
+    # START_EPOCH =5000
+    # END_EPOCH = 6000
+    EPOCH_STEP = 100
     CASEINDEX_list = ['_006','_014','_023','_031']
 
     try:

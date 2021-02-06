@@ -87,11 +87,22 @@ class TrainAndTest():
             return CHECK_EPOCH, MODEL_Dict
 
     def _epoch_save_cycle(self,epoch,save_cycle):
-        for e in save_cycle:
-            if epoch <= e[0]:
-                return e[1]
-            else:
-                pass
+        if isinstance(save_cycle, int):
+            return_value = save_cycle
+            return return_value
+
+        elif isinstance(save_cycle, list):
+            return_value = 10 
+            for e in save_cycle:
+                if epoch <= e[0]:
+                    return_value = e[1]
+                    return return_value
+                else:
+                    pass
+            return return_value
+
+        else:
+            raise ValueError(f'Illegal value of {save_cycle}')
 
     ############################  Train & Validation  ################################
     def train(self,train_params_Dict):

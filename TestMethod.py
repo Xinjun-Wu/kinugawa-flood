@@ -19,9 +19,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('BPNAME')
+    parser.add_argument('START_EPOCH')
+    parser.add_argument('END_EPOCH')
     args = parser.parse_args()
 
     BPNAME = args.BPNAME
+    START_EPOCH = int(args.START_EPOCH)
+    END_EPOCH = int(args.END_EPOCH)H)
 
     with open('./runingfiles/log.txt', 'a') as f:
         f.write(f'\n{time.ctime()}: {BPNAME} test model start ...')
@@ -36,9 +40,9 @@ if __name__ == "__main__":
     TEST_NUM_WORKERS = 0
     STEP=1
 
-    START_EPOCH =5000
-    END_EPOCH = 6000
-    EPOCH_STEP = 10
+    # START_EPOCH = 0
+    # END_EPOCH = 6000
+    EPOCH_STEP = 100
 
     CHECKPOINT = None
     SAVE_CYCLE = 10
