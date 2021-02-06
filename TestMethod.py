@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     BPNAME = args.BPNAME
     START_EPOCH = int(args.START_EPOCH)
-    END_EPOCH = int(args.END_EPOCH)H)
+    END_EPOCH = int(args.END_EPOCH)
 
     with open('./runingfiles/log.txt', 'a') as f:
         f.write(f'\n{time.ctime()}: {BPNAME} test model start ...')
