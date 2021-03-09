@@ -235,19 +235,27 @@ def run(rivername,inputfolder,outputfolder,tempfolder,
 
 if __name__ == "__main__":
     river_list = ['Kinugawa','Kokaigawa']
+    river_list = ['Kinugawa']
 
     for river in river_list:
         # the path of XINJUN-PC
-        input_path = f'F:\\Projects\\Flood\Kinugawa\\01_Raw_Data\\{river}' 
-        output_path =  'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\Files Check Results'      
-        temp_path = 'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\CasesData'
+        # input_path = f'F:\\Projects\\Flood\Kinugawa\\01_Raw_Data\\{river}' 
+        # output_path =  'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\Files Check Results'      
+        # temp_path = 'F:\\Projects\\Flood\Kinugawa\\02_Deep_Learning\\CasesData'
 
         # # the path on dl-box
         # input_path = f'F:\\氾濫予測AI\\01_収集資料\\{river}\\CasesData' 
         # output_path =  '../Files Check Results'      
         # temp_path = '../CasesData'
 
-        run(river,input_path,output_path,temp_path,r'破堤点格子番号.xlsx',True,False,False,False)
+        # # the path on dl-box
+        input_path = f'G:/OneDrive - s.dlu.edu.cn/CheckData/{river}/CasesData' 
+        output_path =  'G:/OneDrive - s.dlu.edu.cn/Files Check Results'
+        temp_path = output_path      
+        #temp_path = '../CasesData'
+
+        run(river,input_path,output_path,temp_path,r'破堤点格子番号.xlsx',
+                True,False,False,False)
     print('Done!')
 
 
