@@ -194,7 +194,7 @@ if __name__ == "__main__":
     with open('./runingfiles/log.txt', 'a') as f:
         f.write(f'\n{time.ctime()}: {BPNAME} generate data start ...')
 
-    # BRANCH = 'Master Branch'
+    BRANCH = 'Master Branch'
     # BRANCH = 'Academic Branch'
     BRANCH = 'Cooperate Branch'
     # BRANCH = 'Dev Branch'
