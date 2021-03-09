@@ -15,11 +15,11 @@ def select_net(group_id,channel_n):
         from Net_List.Ki3_512_80 import ConvNet_2
         model = ConvNet_2(channel_n)
     
-    elif group_id == group_List[2]:
+    elif group_id == group_List[3]:
         from Net_List.Ki4_356_56 import ConvNet_2
         model = ConvNet_2(channel_n)
 
-    elif group_id == group_List[2]:
+    elif group_id == group_List[4]:
         from Net_List.Ki5_280_44 import ConvNet_2
         model = ConvNet_2(channel_n)
 
